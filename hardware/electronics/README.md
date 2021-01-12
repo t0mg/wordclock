@@ -4,7 +4,7 @@ This section of the [Wordclock project](../../README.md) covers the wiring of th
 
 ## Circuit
 
-See [here](../../README.md##bill-of-materials) for components list. 
+See [here](../../README.md#bill-of-materials) for components list. 
 
 Everything fits fairly easily on the proto board which is 80mm x 50mm. It is possible to make it wider than 80mm, but the short side (50mm) is physically constrained by the frame. Thickness must also kept to a minimum (the clock module is probably the thickest part with its battery holder).
 
