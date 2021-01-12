@@ -7,7 +7,13 @@ Another take on the classic DIY word clock. This one requires a laser cutter but
 
 This project was designed for the tools available in our makerspace. The largest square that can be cut in an Epilog Mini laser cutter is approximately 30x30cm, so the clock is designed around that constraint.
 
-[ TOC ]
+- [Wordclock](#wordclock)
+  * [Project overview](#project-overview)
+    + [Hardware](#hardware)
+    + [Software](#software)
+  * [Bill Of Materials](#bill-of-materials)
+    + [Electronics](#electronics)
+    + [Frame](#frame)
 
 ## Project overview
 
@@ -42,9 +48,9 @@ It is, of course, entirely possible to ditch that code entirely and use [ESPHome
 ESP32 (WROOM32) microcontroller | [amazon.fr](https://www.amazon.fr/gp/product/B06XWVS2SJ/ref=ox_sc_act_title_6?smid=A3OY00ITR6XRNR&psc=1) | 5,99 € |
 DS3231 RTC module | [amazon.fr](https://www.amazon.fr/gp/product/B07DK5M5VW/) | 3,66 € |
 Level shifter 3.3 -> 5v | [amazon.fr](https://www.amazon.fr/gp/product/B07LG6RK7L) | 0,80 € |
-RGB addressable LEDs, 60 per meter, 1 meter roll | [aliexpress.com](https://www.aliexpress.com/item/32958709980.html?spm=2114.search0104.3.35.2a616adcbmvvSU&ws_ab_test=searchweb0_0%2Csearchweb201602_4_10065_10130_10068_10547_319_317_10545_10696_10084_453_454_10083_10618_10307_10821_537_10302_536_10059_10884_10887_321_322_10103%2Csearchweb201603_53%2CppcSwitch_0&algo_expid=2a4f6a2a-c5bc-4435-a3ff-21b692aed5ff-7&algo_pvid=2a4f6a2a-c5bc-4435-a3ff-21b692aed5ff) | 4,17 € |
+RGB addressable LEDs (WS2812), 60 per meter, 1 meter roll | [aliexpress.com](https://www.aliexpress.com/item/32958709980.html?spm=2114.search0104.3.35.2a616adcbmvvSU&ws_ab_test=searchweb0_0%2Csearchweb201602_4_10065_10130_10068_10547_319_317_10545_10696_10084_453_454_10083_10618_10307_10821_537_10302_536_10059_10884_10887_321_322_10103%2Csearchweb201603_53%2CppcSwitch_0&algo_expid=2a4f6a2a-c5bc-4435-a3ff-21b692aed5ff-7&algo_pvid=2a4f6a2a-c5bc-4435-a3ff-21b692aed5ff) | 4,17 € |
 1000 uF capacitor | [amazon.fr](https://www.amazon.fr/gp/product/B01M4IUST7) | 0,40 € |
-Power supply | [aliexpress.com](https://fr.aliexpress.com/item/32835554243.html) | 6,99 € |
+Power supply (5V, 6A) | [aliexpress.com](https://fr.aliexpress.com/item/32835554243.html) | 6,99 € |
 Female barrel plug | [amazon.fr](https://www.amazon.fr/gp/product/B06XPBKC37) | 0,86 € |
 Light dependent resistor (LDR 5537) | [amazon.fr](https://www.amazon.fr/gp/product/B074QLFCF6/) | 0,08 € |
 Resistor 10k |
