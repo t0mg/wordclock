@@ -29,7 +29,7 @@ Building the clock from scratch involves mostly laser cutting and soldering. It 
 
 - __The faceplate__ is a glass panel from a cheap picture frame, that is spray painted on its back, then laser etched to mark the letters. The templates and instructions are located in [the faceplate subdirectory](hardware/faceplate/README.md).
 - __The frame__ is a sandwich of laser-cut MDF planks. If could be done with CEC or 3d printing too. It holds everything together and most importantly the LED matrix. It has little wells for each LED to channel the light to the letters on the faceplate. The templates and assembly instructions are located in [the frame subdirectory](hardware/frame/README.md).
-- __The electronics__ revolve around a WiFI enabled ESP32 development board and a matrix of 114 LEDs made from an LED strip. There is also an RTC module to keep track of time, and a lignt sensor (LDR). The schematics and instructions for assembly are located in [the electronics subdirectory](hardware/frame/README.md).
+- __The electronics__ revolve around a WiFI enabled ESP32 development board and a matrix of 114 LEDs made from an LED strip. There is also an RTC module to keep track of time, and a lignt sensor (LDR). The schematics and instructions for assembly are located in [the electronics subdirectory](hardware/electronics/README.md).
 
 ![](images/breakdown.png)
 
