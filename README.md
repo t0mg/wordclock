@@ -1,8 +1,10 @@
 # Wordclock
 ESP32 based DIY wordclock project
 
+TL;DR: check out this :sparkles:[demo video](https://youtu.be/WF_X5soabm0) :sparkles:
+
 <br/>
-<img src="images/logo.svg" width="200" align="left"> Another take on the classic DIY word clock. This one requires a laser cutter but promises a very clean result and is quite cheap to make (about 50 €) while being feature packed with its 11x10 RGB LED matrix, RTC module (time setting survives power loss), light sensor, WiFi connectivity and more.
+<img src="images/logo.svg" width="200" align="left">Another take on the classic DIY word clock. This one requires a laser cutter but promises a very clean result and is quite cheap to make (about 50 €) while being feature packed with its 11x10 RGB LED matrix, RTC module (time setting survives power loss), light sensor, WiFi connectivity and more. 
 
 This project was designed for the tools available in our makerspace. The largest square that can be cut in an Epilog Mini laser cutter is approximately 30x30cm, so the clock is designed around that constraint.
 
