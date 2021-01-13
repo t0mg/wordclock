@@ -8,6 +8,7 @@ TL;DR: check out this :sparkles:[demo video](https://youtu.be/WF_X5soabm0) :spar
 
 This project was designed for the tools available in our makerspace. The largest square that can be cut in an Epilog Mini laser cutter is approximately 30x30cm, so the clock is designed around that constraint.
 
+<br/>
 <p align="center">
 <img src="images/wordclock-build.jpg" height="500">
 <img src="images/wordclock-closeup.jpg" height="500">
@@ -45,7 +46,7 @@ The provided [source code](software/README.md) is using Arduino IDE with the [ar
   <img src="images/webui.png" width="200">
 </p>
 
-It is, of course, entirely possible to ditch that code entirely and use [ESPHome](https://esphome.io/) or [MicroPython](https://docs.micropython.org/en/latest/esp32/tutorial/intro.html) instead. 
+It is, of course, possible to ditch that code entirely and use [ESPHome](https://esphome.io/) or [MicroPython](https://docs.micropython.org/en/latest/esp32/tutorial/intro.html) instead. 
 
 ## Bill Of Materials
 
