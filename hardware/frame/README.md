@@ -25,7 +25,7 @@ The layers are glued together using wood glue, the sides of the frames should th
   * [Back panel](#back-panel)
 - [Laser cutting](#laser-cutting)
   * [Vector template files](#vector-template-files)
-  * [Notes for using [Visicut](https://visicut.org/)](#notes-for-using--visicut--https---visicutorg--)
+  * [Notes for using Visicut](#notes-for-using-visicut)
     + [Back panel template](#back-panel-template)
     + [Cut1 template (310x310x3mm MDF board)](#cut1-template--310x310x3mm-mdf-board-)
     + [Cut2 template (310x310x6mm MDF board)](#cut2-template--310x310x6mm-mdf-board-)
