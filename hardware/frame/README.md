@@ -1,6 +1,6 @@
 # Frame
 
-This section of the [Wordclock project](../../README.md) covers the laser cut MDF frame of the clock, as well as the [final assembly](#worcdlock-assembly) steps.
+This section of the [Wordclock project](../../README.md) covers the laser cut MDF frame of the clock, as well as the [final assembly](#wordclock-assembly) steps.
 
 
 
@@ -31,7 +31,7 @@ The layers are glued together using wood glue, the sides of the frames should th
     - [Cut2 template (310x310x6mm MDF board)](#cut2-template-310x310x6mm-mdf-board)
     - [Spacers template (310x310x6mm MDF board)](#spacers-template-310x310x6mm-mdf-board)
 * [Frame assembly](#frame-assembly)
-* [Worcdlock assembly](#worcdlock-assembly)
+* [Worcdlock assembly](#wordclock-assembly)
   + [Adding touch sensors](#adding-touch-sensors)
   + [Adding the edgebanding](#adding-the-edgebanding)
   + [Adding felt strips and diffuser](#adding-felt-strips-and-diffuser)
@@ -154,7 +154,7 @@ When adding the first spacer frame, you'll have to cut out the bottom piece to p
 
 Sand the edges of the frame to remove the burn marks and smoothen the small misalignments. The edge banding can be applied with an iron but this should be done as one of the last step, once the rest of the build is complete. If you are ready with the [electronics](../electronics/README.md) and [faceplate](../faceplate/README.md), you can proceed with the final assembly.
 
-## Worcdlock assembly
+## Wordclock assembly
 
 These are the final assembly steps once the frame, [electronics](../electronics/README.md) and [faceplate](../faceplate/README.md) are completed.
 

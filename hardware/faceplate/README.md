@@ -1,6 +1,6 @@
 # Faceplate
 
-This section of the [Wordclock project](../../README.md) covers the glass faceplate. For final assembly with the frame, see [here](../frame/#worcdlock-assembly).
+This section of the [Wordclock project](../../README.md) covers the glass faceplate. For final assembly with the frame, see [here](../frame/#wordclock-assembly).
 
 
 
