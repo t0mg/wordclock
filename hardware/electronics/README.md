@@ -44,9 +44,16 @@ Here's another view of the circuit, which can be used as an easier reference to 
 
 ## LED Matrix
 
-<img src="images/led-matrix.jpg" align="left" width="500"> We use a strip of 60 LEDs per meter (12mm spacing or a LED every 0.65"/17mm) which provides adequate spacing for this build. The strip is cut into 10 segments of 11 LEDs which are wired as a daisy chain. At one end of the chain, 4 additional LEDs are placed in each corner of the frame and mark the 4 minutes between text updates (eg from 'quarter' to 'twenty').
+<p align="center">
+<img src="images/wiring.png" width="420">
+<img src="images/led-matrix.jpg" width="420">
+</p>
 
-The LED modules take +5V, GND and DIN (data line). It's okay to daisychain everything for simpler wiring, but you might notice slightly dimmer lights towards the end of the chain. For better power distribution, you can feed +5V from the middle of each segment or make small groups of segments. Only the data line actually needs to be daisychained.
+We use 2 strips of 1 meter with 60 LEDs per meter (12mm spacing or a LED every 0.65"/17mm) which provides adequate spacing for this build. The strips are cut into 10 segments of 11 LEDs which are wired as a daisy chain. At one end of the chain, 4 additional LEDs are placed in each corner of the frame and mark the 4 minutes between text updates (eg from 'quarter' to 'twenty').
+
+The LED modules take +5V (red in the diagram above), GND (black) and DIN (data line, green). It's okay to daisychain everything for simpler wiring, but you might notice slightly dimmer lights towards the end of the chain. For better power distribution, you can feed +5V from the middle of each segment or make small groups of segments. Only the data line actually needs to be daisychained.
+
+Be careful about the orientation of your strips, there are little arrows screenprinted on them. The arrow direction should alternate from one raw to the other (see video link below).
 
 The LED strips are hotglued to the dedicated lasercut support (see the [frame building instructions](../frame/README.md)).
 
