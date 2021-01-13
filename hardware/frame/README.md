@@ -94,14 +94,14 @@ The outer rim will be glued to the frame while the center part will be screwed f
 | ----- | ------------- | ------| ----- |
 | Back | [wordclock_frame_back_template.svg](wordclock_frame_back_template.svg) | 15 |  Place the home exactly on the top left corner of the piece. |
 | Cut1 | [wordclock_frame_cut1_template_3mm_sheet.svg](wordclock_frame_cut1_template_3mm_sheet.svg) | 14 | Place the home ~2mm from the top and left border of the board. |
-| Cut2 | [wordclock_frame_cut2_template_6mm_sheet.svg](wordclock_frame_cut2_template_6mm_sheet.svg) | 14 | Can require require 2 to 3 passes due to thickness, depending on MDF qualioty. Place the home ~2mm from the top and left border of the board. Manual focus adjustment is needed between passes. |
+| Cut2 | [wordclock_frame_cut2_template_6mm_sheet.svg](wordclock_frame_cut2_template_6mm_sheet.svg) | 14 | Can require require 2 to 3 passes due to thickness, depending on MDF quality. Place the home ~2mm from the top and left border of the board. Manual focus adjustment is needed between passes. |
 | Spacers | [wordclock_frame_spacers_template_6mm_sheet.svg](wordclock_frame_spacers_template_6mm_sheet.svg) | 14 | Can require 2 to 3 passes, same as above. |
 
 _Note: speed value is the suggested setting for Epilog Mini 40W, with power at 100._
 
 ### Notes for using [Visicut](https://visicut.org/)
 
-Below are detailed instructions for using these templates with Visicut software.
+Below are specific instructions for using these templates with Visicut software on an Epilog laser cutter.
 
 #### Back panel template
 1. Import the file in Visicut.
@@ -124,13 +124,13 @@ Below are detailed instructions for using these templates with Visicut software.
 4. 6mm board is hard to cut and will likely require more than one pass:
 - 1st pass: use 14 speed / 100 power with autofocus option on in Visicut.
 - 2nd pass: we’ll use the same speed/power but disable the autofocus and use manual focus to bring the board ~3 mm closer to the laser head, here are the setps for the Epilog Mini :
-  - Delete the previous job (trashcan button on the control panel).
-  - Unlock the laser head if needed (x/y unlock) but DO NOT set the home again.
-  - Press manual focus mode button at the bottom right of the Epilog’s control panel.
-  - Move the bed up with 3 short presses of the up arrow on the control panel.
-  - Finally press return (u-turn shaped arrow button).
-  - Uncheck “enable auto focus” in Visicut and send (Execute) the job to the Epilog.
-  - Press go on the Epilog to start the 2nd pass. <br/> Depending on the cleanliness of the optics, MDF batch your board comes from, planet alignment, tea leaves in your cup and other parameters it might be required to do a 3rd pass. Look at the bottom side of the board, if the cut isn’t fully visible: very carefully put the board back in position. DO NOT change the home settings! Wipe it with a paper towel, add another 1 mm of offset to the focus (bring the table 1mm closer to the laser head) and run the previous job again.
+  * Delete the previous job (trashcan button on the control panel).
+  * Unlock the laser head if needed (x/y unlock) but DO NOT set the home again.
+  * Press manual focus mode button at the bottom right of the Epilog’s control panel.
+  * Move the bed up with 3 short presses of the up arrow on the control panel.
+  * Finally press return (u-turn shaped arrow button).
+  * Uncheck “enable auto focus” in Visicut and send (Execute) the job to the Epilog.
+  * Press go on the Epilog to start the 2nd pass. <br/> Depending on the cleanliness of the optics, MDF batch your board comes from, planet alignment, tea leaves in your cup and other parameters it might be required to do a 3rd pass. Look at the bottom side of the board, if the cut isn’t fully visible: very carefully put the board back in position. DO NOT change the home settings! Wipe it with a paper towel, add another 1 mm of offset to the focus (bring the table 1mm closer to the laser head) and run the previous job again.
 
 #### Spacers template (310x310x6mm MDF board)
 Follow the same steps as for Cut1 above.
@@ -145,4 +145,4 @@ When adding the first spacer frame, you'll have to cut out the bottom piece to p
   <img src="images/frame-cutouts.jpg">
 <p>
 
-Sand the edges of the frame to remove the burn marks and smoothen the small misalignments. The edge banding can be applied with an iron but this should be done ony once the rest of the build is complete.
+Sand the edges of the frame to remove the burn marks and smoothen the small misalignments. The edge banding can be applied with an iron but this should be done as a last step, once the rest of the build is complete.
