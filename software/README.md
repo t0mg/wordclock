@@ -26,7 +26,7 @@ _Note: you might also need to install the appropriate USB driver for your ESP32 
 This project relies on several additional libraries that need to be installed in the Arduino IDE. Open the Library Manager (`Tools > Manage Libraries...`), then search an add the following:
 
 - [RTClib](https://github.com/adafruit/RTClib) by Adafruit
-- [IotWebConf](https://github.com/prampec/IotWebConf) by Balazs Kelemen
+- [IotWebConf](https://github.com/prampec/IotWebConf) by Balazs Kelemen **version 2.3.x** (not compatible with version 3 yet)
 - [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) by Michael C. Mille
 
 You are now ready to compile and flash the [`wordclock.ino` sketch](wordclock/wordclock.ino).
