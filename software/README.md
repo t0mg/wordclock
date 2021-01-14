@@ -1,6 +1,6 @@
 # Software
 
-This section of the [Wordclock project](../../README.md) covers the software running on the clock's ESP32.
+This section of the [Wordclock project](../README.md) covers the software running on the clock's ESP32.
 
 
 ## Features
