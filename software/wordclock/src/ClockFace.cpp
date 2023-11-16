@@ -14,6 +14,7 @@
 // Number of LEDs on the whole strip.
 #define NEOPIXEL_COUNT (NEOPIXEL_ROWS * NEOPIXEL_COLUMNS + NEOPIXEL_SIGNALS)
 
+
 // static
 int ClockFace::pixelCount()
 {
@@ -35,13 +36,13 @@ uint16_t ClockFace::map(int16_t x, int16_t y)
   case LightSensorPosition::Top:
   {
     static NeoTopology<ColumnMajorAlternating90Layout> sensor_on_top(
-        NEOPIXEL_ROWS, NEOPIXEL_COLUMNS);
+        1, 1);
     return sensor_on_top.Map(x, y) + NEOPIXEL_SIGNALS;
   }
   case LightSensorPosition::Bottom:
   {
     static NeoTopology<ColumnMajorAlternating270Layout> sensor_on_bottom(
-        NEOPIXEL_ROWS, NEOPIXEL_COLUMNS);
+        1, 1);
     return sensor_on_bottom.Map(x, y) + NEOPIXEL_SIGNALS;
   }
   default:
@@ -266,6 +267,223 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second, bool show_a
   case 55:
     updateSegment(FR_M_MOINS);
     updateSegment(FR_M_CINQ);
+    break;
+  default:
+    DLOG("Invalid minute ");
+    DLOGLN(minute);
+  }
+
+  switch (leftover)
+  {
+  case 4:
+    _state[mapMinute(TopLeft)] = true;
+  case 3: // fall through
+    _state[mapMinute(BottomLeft)] = true;
+  case 2: // fall through
+    _state[mapMinute(BottomRight)] = true;
+  case 1: // fall through
+    _state[mapMinute(TopRight)] = true;
+  case 0: // fall through
+    break;
+  }
+  return true;
+}
+
+
+
+// Constants to match the EnglishClockFace.
+//
+// Letters in lowercase below are not used by the clock.
+
+//0 ESJISTRFÜNF
+//1 ZEHNZWANZIG
+//2 DREIVIERTEL
+//3 VORANDYNACH
+//4 HALBAELFÜNF
+//5 EINSXAZWEIM
+//6 XDREIVPVIER
+//7 SECHSNACHTL
+//8 SIEBENZWÖLF
+//9 ZEHNEUNKUHR
+
+// All the segments of words on the board. The first number is the
+// coordinate of the first letter of the word, the last is the length. A word
+// must always be on one row.
+#define DE_S_IT 0, 0, 2
+#define DE_S_IS 3, 0, 3
+
+#define DE_H_ONE 0, 5, 4
+#define DE_H_TWO 6, 5, 4
+#define DE_H_THREE 1, 6, 4
+#define DE_H_FOUR 7, 6, 4
+#define DE_H_FIVE 7, 4, 4
+#define DE_H_SIX 0, 7, 5
+#define DE_H_SEVEN 0, 8, 6
+#define DE_H_EIGHT 6, 7, 4
+#define DE_H_NINE 3, 9, 4
+#define DE_H_TEN 0, 9, 4
+#define DE_H_ELEVEN 5, 4, 3
+#define DE_H_TWELVE 6, 8, 5
+
+#define DE_H_AM 1,  1,  0
+#define DE_H_PM 2,  1,  0
+
+#define DE_M_A 3,  1,0
+#define DE_M_PAST 7, 3, 4
+#define DE_M_TO 0, 3, 3
+
+#define DE_M_TEN 0, 1, 4
+#define DE_M_QUARTER 4, 2, 6
+#define DE_M_TWENTY 4, 1, 7
+#define DE_M_FIVE 7, 0, 4
+#define DE_M_HALF 0, 4, 4
+
+#define DE_M_OCLOCK 8, 9, 3
+
+bool GermanClockFace::stateForTime(int hour, int minute, int second, bool show_ampm)
+{
+  if (hour == _hour && minute == _minute && show_ampm == _show_ampm)
+  {
+    return false;
+  }
+  _hour = hour;
+  _minute = minute;
+  _show_ampm = show_ampm;
+
+  DLOGLN("update state");
+
+  // Reset the board to all black
+  for (int i = 0; i < NEOPIXEL_COUNT; i++)
+    _state[i] = false;
+
+  int leftover = minute % 5;
+  minute = minute - leftover;
+
+  if (minute >= 35)
+    hour = (hour + 1) % 24; // Switch to "TO" minutes the next hour
+
+  updateSegment(DE_S_IS);
+  updateSegment(DE_S_IS);
+
+  if (show_ampm)
+  {
+    if (hour < 13)
+    {
+      updateSegment(DE_H_AM);
+    }
+    else
+    {
+      updateSegment(DE_H_PM);
+    }
+  }
+
+  switch (hour)
+  {
+  case 0:
+    updateSegment(DE_H_TWELVE);
+    break;
+  case 1:
+  case 13:
+    updateSegment(DE_H_ONE);
+    break;
+  case 2:
+  case 14:
+    updateSegment(DE_H_TWO);
+    break;
+  case 3:
+  case 15:
+    updateSegment(DE_H_THREE);
+    break;
+  case 4:
+  case 16:
+    updateSegment(DE_H_FOUR);
+    break;
+  case 5:
+  case 17:
+    updateSegment(DE_H_FIVE);
+    break;
+  case 6:
+  case 18:
+    updateSegment(DE_H_SIX);
+    break;
+  case 7:
+  case 19:
+    updateSegment(DE_H_SEVEN);
+    break;
+  case 8:
+  case 20:
+    updateSegment(DE_H_EIGHT);
+    break;
+  case 9:
+  case 21:
+    updateSegment(DE_H_NINE);
+    break;
+  case 10:
+  case 22:
+    updateSegment(DE_H_TEN);
+    break;
+  case 11:
+  case 23:
+    updateSegment(DE_H_ELEVEN);
+    break;
+  case 12:
+    updateSegment(DE_H_TWELVE);
+    break;
+  default:
+    DLOG("Invalid hour ");
+    DLOGLN(hour);
+  }
+
+  switch (minute)
+  {
+  case 0:
+    updateSegment(DE_M_OCLOCK);
+    break;
+  case 5:
+    updateSegment(DE_M_FIVE);
+    updateSegment(DE_M_PAST);
+    break;
+  case 10:
+    updateSegment(DE_M_TEN);
+    updateSegment(DE_M_PAST);
+    break;
+  case 15:
+    updateSegment(DE_M_A);
+    updateSegment(DE_M_QUARTER);
+    updateSegment(DE_M_PAST);
+    break;
+  case 20:
+    updateSegment(DE_M_TWENTY);
+    updateSegment(DE_M_PAST);
+    break;
+  case 25:
+    updateSegment(DE_M_FIVE);
+    updateSegment(DE_M_TO);
+    updateSegment(DE_M_HALF);
+    break;
+  case 30:
+    updateSegment(DE_M_HALF);
+    updateSegment(DE_M_PAST);
+    break;
+  case 35:
+    updateSegment(DE_M_FIVE);
+    updateSegment(DE_M_PAST);
+    break;
+  case 40:
+    updateSegment(DE_M_TWENTY);
+    updateSegment(DE_M_TO);
+    break;
+  case 45:
+    updateSegment(DE_M_QUARTER);
+    updateSegment(DE_M_TO);
+    break;
+  case 50:
+    updateSegment(DE_M_TEN);
+    updateSegment(DE_M_TO);
+    break;
+  case 55:
+    updateSegment(DE_M_FIVE);
+    updateSegment(DE_M_TO);
     break;
   default:
     DLOG("Invalid minute ");

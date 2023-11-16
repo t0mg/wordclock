@@ -74,3 +74,11 @@ public:
 
   virtual bool stateForTime(int hour, int minute, int second, bool show_ampm);
 };
+
+class GermanClockFace : public ClockFace
+{
+public:
+  GermanClockFace(LightSensorPosition position) : ClockFace(position){};
+
+  virtual bool stateForTime(int hour, int minute, int second, bool show_ampm);
+};
