@@ -22,7 +22,7 @@ public:
   void setColor(const RgbColor &color);
 
   // Sets the sensor sentivity of the brightness controller.
-  int setSensorSentivity(int value) { _brightnessController.setSensorSensitivity(value); return value; }
+  void setSensorSentivity(int value) { _brightnessController.setSensorSensitivity(value); }
 
   // Sets whether to show AM/PM information on the display.
   void setShowAmPm(bool show_ampm) { _show_ampm = show_ampm; }
