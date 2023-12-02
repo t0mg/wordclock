@@ -27,7 +27,7 @@ void Timer::setup(std::function<void()> callback, uint32_t delay_seconds)
 
 void Timer::start()
 {
-    timer_ = timerBegin(3, 8000, 1); //div 80
+    timer_ = timerBegin(1, 8000, 1); //div 80
     timerAttachInterrupt(timer_, &onTimer_, 1);
     timerAlarmWrite(timer_, delay_seconds_ * 10000, true); //1000ms
     timerAlarmEnable(timer_);
