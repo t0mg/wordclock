@@ -4,6 +4,8 @@
 
 #include "ClockFace.h"
 
+#include "nodo.h" // Nodo stuff
+
 // The number of LEDs connected before the start of the matrix.
 #define NEOPIXEL_SIGNALS 4
 
@@ -36,7 +38,21 @@ uint16_t ClockFace::map(int16_t x, int16_t y)
   {
     static NeoTopology<ColumnMajorAlternating90Layout> sensor_on_top(
         NEOPIXEL_ROWS, NEOPIXEL_COLUMNS);
+#ifdef NODO
+    // do conversion from normal coordinates to Nodo coordinates
+    ind = sensor_on_top.Map(x, y);
+    if (ind < 11)
+      inc = 1; // one pixel before first row
+    else if (ind < 99)
+      inc = 2; // two pixels before second row
+    else
+      inc = 3; // three pixels
+    // mirror pixel grid
+    ind = 11 * (ind / 11) + 10 - ind % 11;
+    return ind + inc;
+#else
     return sensor_on_top.Map(x, y) + NEOPIXEL_SIGNALS;
+#endif
   }
   case LightSensorPosition::Bottom:
   {
