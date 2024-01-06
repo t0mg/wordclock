@@ -415,9 +415,15 @@ void Iot::maybeSetRTCfromNTP_()
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo))
   {
+#ifdef LED
+    digitalWrite(LED, LOW);
+#endif
     DLOGLN("Failed to obtain time.");
     return;
   }
+#ifdef LED
+  else digitalWrite(LED, HIGH);
+#endif
 
   rtc_->adjust(DateTime(timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
   DLOG("RTC set to:");
