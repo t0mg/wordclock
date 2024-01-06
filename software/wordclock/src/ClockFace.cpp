@@ -73,7 +73,21 @@ uint16_t ClockFace::mapMinute(Corners corner)
   case LightSensorPosition::Bottom:
     return (static_cast<uint16_t>(corner) + 2) % 4;
   case LightSensorPosition::Top:
+#ifdef NODO
+    switch (static_cast<uint16_t>(corner))
+    {
+    case 0:
+      return 113;
+    case 1:
+      return 101;
+    case 2:
+      return 12;
+    default:
+      return 0;
+    }
+#else
     return static_cast<uint16_t>(corner);
+#endif
   default:
     DCHECK(false, static_cast<int>(corner));
   }
@@ -291,16 +305,6 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second, bool show_a
 
   switch (leftover)
   {
-#ifdef NODO
-  case 4:
-    _state[113] = true;
-  case 3: // fall through
-    _state[101] = true;
-  case 2: // fall through
-    _state[12] = true;
-  case 1: // fall through
-    _state[0] = true;
-#else
   case 4:
     _state[mapMinute(TopLeft)] = true;
   case 3: // fall through
@@ -309,7 +313,6 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second, bool show_a
     _state[mapMinute(BottomRight)] = true;
   case 1: // fall through
     _state[mapMinute(TopRight)] = true;
-#endif
   case 0: // fall through
     break;
   }
@@ -520,16 +523,6 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second, bool show_
 
   switch (leftover)
   {
-#ifdef NODO
-  case 4:
-    _state[113] = true;
-  case 3: // fall through
-    _state[101] = true;
-  case 2: // fall through
-    _state[12] = true;
-  case 1: // fall through
-    _state[0] = true;
-#else
   case 4:
     _state[mapMinute(TopLeft)] = true;
   case 3: // fall through
@@ -538,7 +531,6 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second, bool show_
     _state[mapMinute(BottomRight)] = true;
   case 1: // fall through
     _state[mapMinute(TopRight)] = true;
-#endif
   case 0: // fall through
     break;
   }
@@ -742,13 +734,13 @@ bool DutchClockFace::stateForTime(int hour, int minute, int second,
   switch (leftover)
   {
   case 4:
-    _state[113] = true;
+    _state[mapMinute(TopLeft)] = true;
   case 3: // fall through
-    _state[101] = true;
+    _state[mapMinute(BottomLeft)] = true;
   case 2: // fall through
-    _state[12] = true;
+    _state[mapMinute(BottomRight)] = true;
   case 1: // fall through
-    _state[0] = true;
+    _state[mapMinute(TopRight)] = true;
   case 0: // fall through
     break;
   }
