@@ -39,6 +39,7 @@ uint16_t ClockFace::map(int16_t x, int16_t y)
     static NeoTopology<ColumnMajorAlternating90Layout> sensor_on_top(
         NEOPIXEL_ROWS, NEOPIXEL_COLUMNS);
 #ifdef NODO
+    int ind, inc;
     // do conversion from normal coordinates to Nodo coordinates
     ind = sensor_on_top.Map(x, y);
     if (ind < 11)
@@ -52,7 +53,8 @@ uint16_t ClockFace::map(int16_t x, int16_t y)
     return ind + inc;
 #else
     return sensor_on_top.Map(x, y) + NEOPIXEL_SIGNALS;
-#endif  }
+#endif
+  }
   case LightSensorPosition::Bottom:
   {
     static NeoTopology<ColumnMajorAlternating270Layout> sensor_on_bottom(
@@ -515,6 +517,216 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second, bool show_
     _state[mapMinute(BottomRight)] = true;
   case 1: // fall through
     _state[mapMinute(TopRight)] = true;
+  case 0: // fall through
+    break;
+  }
+  return true;
+}
+
+//
+// Constants to match the Dutch ClockFace.
+//
+// Custom Dutch face. Letters in lowercase below are not used
+// by the clock.
+
+// HETkISaVIJF
+// TIENatxVOOR
+// OVERmeKWART
+// HALFspmOVER
+// VOORthgEENs
+// TWEEamcDRIE
+// VIERVIJFZES
+// ZEVENoNEGEN
+// ACHTTIENELF
+// TWAALFpmUUR
+//
+
+// All the segments of words on the board. The first too numbers are the
+// coordinate of the first letter of the word, the last is the length. A word
+// must always be on one row.
+#define NL_S_HET 0, 0, 3
+#define NL_S_IS 4, 0, 2
+
+#define NL_H_EEN 7, 4, 3
+#define NL_H_TWEE 0, 5, 4
+#define NL_H_DRIE 7, 5, 4
+#define NL_H_VIER 0, 6, 4
+#define NL_H_VIJF 4, 6, 4
+#define NL_H_ZES 8, 6, 3
+#define NL_H_ZEVEN 0, 7, 5
+#define NL_H_ACHT 0, 8, 4
+#define NL_H_NEGEN 6, 7, 5
+#define NL_H_TIEN 4, 8, 4
+#define NL_H_ELF 8, 8, 3
+#define NL_H_TWAALF 0, 9, 6
+
+#define NL_H_UUR 8, 9, 3
+
+#define NL_M_VOOR 7, 1, 4
+#define NL_M_VOOR2 0, 4, 4
+#define NL_M_OVER 0, 2, 4
+#define NL_M_OVER2 7, 3, 4
+#define NL_M_KWART 6, 2, 5
+#define NL_M_TIEN 0, 1, 4
+#define NL_M_VIJF 7, 0, 4
+#define NL_M_HALF 0, 3, 4
+
+bool DutchClockFace::stateForTime(int hour, int minute, int second,
+                                  bool show_ampm)
+{
+  if (hour == _hour && minute == _minute)
+  {
+    return false;
+  }
+  _hour = hour;
+  _minute = minute;
+
+  DLOGLN("update state");
+
+  // TODO move to a more convenient place
+  // Reset the board to all black
+  for (int i = 0; i < NEOPIXEL_COUNT; i++)
+    _state[i] = false;
+
+  int leftover = minute % 5;
+  minute = minute - leftover;
+
+  if (minute > 15)
+    hour = (hour + 1) % 24; // Switch to "TO" minutes the next hour
+
+  updateSegment(NL_S_HET);
+  updateSegment(NL_S_IS);
+
+  switch (hour)
+  {
+  case 1:
+  case 13:
+    updateSegment(NL_H_EEN);
+    break;
+  case 2:
+  case 14:
+    updateSegment(NL_H_TWEE);
+    break;
+  case 3:
+  case 15:
+    updateSegment(NL_H_DRIE);
+    break;
+  case 4:
+  case 16:
+    updateSegment(NL_H_VIER);
+    break;
+  case 5:
+  case 17:
+    updateSegment(NL_H_VIJF);
+    break;
+  case 6:
+  case 18:
+    updateSegment(NL_H_ZES);
+    break;
+  case 7:
+  case 19:
+    updateSegment(NL_H_ZEVEN);
+    break;
+  case 8:
+  case 20:
+    updateSegment(NL_H_ACHT);
+    break;
+  case 9:
+  case 21:
+    updateSegment(NL_H_NEGEN);
+    break;
+  case 10:
+  case 22:
+    updateSegment(NL_H_TIEN);
+    break;
+  case 11:
+  case 23:
+    updateSegment(NL_H_ELF);
+    break;
+  case 0:
+  case 12:
+    updateSegment(NL_H_TWAALF);
+    break;
+  default:
+    DLOG("Invalid hour ");
+    DLOGLN(hour);
+  }
+  switch (hour)
+  {
+  case 0:
+  case 12:
+    break;
+  default:
+    break;
+  }
+
+  switch (minute)
+  {
+  case 0:
+    updateSegment(NL_H_UUR);
+    break;
+  case 5:
+    updateSegment(NL_M_VIJF);
+    updateSegment(NL_M_OVER);
+    break;
+  case 10:
+    updateSegment(NL_M_TIEN);
+    updateSegment(NL_M_OVER);
+    break;
+  case 15:
+    updateSegment(NL_M_KWART);
+    updateSegment(NL_M_OVER2);
+    break;
+  case 20:
+    updateSegment(NL_M_TIEN);
+    updateSegment(NL_M_VOOR);
+    updateSegment(NL_M_HALF);
+    break;
+  case 25:
+    updateSegment(NL_M_VIJF);
+    updateSegment(NL_M_VOOR);
+    updateSegment(NL_M_HALF);
+    break;
+  case 30:
+    updateSegment(NL_M_HALF);
+    break;
+  case 35:
+    updateSegment(NL_M_VIJF);
+    updateSegment(NL_M_OVER);
+    updateSegment(NL_M_HALF);
+    break;
+  case 40:
+    updateSegment(NL_M_TIEN);
+    updateSegment(NL_M_OVER);
+    updateSegment(NL_M_HALF);
+    break;
+  case 45:
+    updateSegment(NL_M_KWART);
+    updateSegment(NL_M_VOOR2);
+    break;
+  case 50:
+    updateSegment(NL_M_VOOR);
+    updateSegment(NL_M_TIEN);
+    break;
+  case 55:
+    updateSegment(NL_M_VOOR);
+    updateSegment(NL_M_VIJF);
+    break;
+  default:
+    DLOG("Invalid minute ");
+    DLOGLN(minute);
+  }
+
+  switch (leftover)
+  {
+  case 4:
+    _state[113] = true;
+  case 3: // fall through
+    _state[101] = true;
+  case 2: // fall through
+    _state[12] = true;
+  case 1: // fall through
+    _state[0] = true;
   case 0: // fall through
     break;
   }
