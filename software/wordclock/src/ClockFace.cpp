@@ -17,23 +17,29 @@
 #define NEOPIXEL_COUNT (NEOPIXEL_ROWS * NEOPIXEL_COLUMNS + NEOPIXEL_SIGNALS)
 
 // static
-int ClockFace::pixelCount() { return NEOPIXEL_COUNT; }
+int ClockFace::pixelCount()
+{
+  return NEOPIXEL_COUNT;
+}
 
-ClockFace::ClockFace(LightSensorPosition position)
-    : _hour(-1), _minute(-1), _second(-1), _position(position),
-      _state(NEOPIXEL_COUNT){};
+ClockFace::ClockFace(LightSensorPosition position) : _hour(-1), _minute(-1), _second(-1),
+                                                     _position(position), _state(NEOPIXEL_COUNT){};
 
-void ClockFace::setLightSensorPosition(LightSensorPosition position) {
+void ClockFace::setLightSensorPosition(LightSensorPosition position)
+{
   _position = position;
 }
 
-uint16_t ClockFace::map(int16_t x, int16_t y) {
-  switch (_position) {
-  case LightSensorPosition::Top: {
-    int ind, inc;
+uint16_t ClockFace::map(int16_t x, int16_t y)
+{
+  switch (_position)
+  {
+  case LightSensorPosition::Top:
+  {
     static NeoTopology<ColumnMajorAlternating90Layout> sensor_on_top(
         NEOPIXEL_ROWS, NEOPIXEL_COLUMNS);
 #ifdef NODO
+    int ind, inc;
     // do conversion from normal coordinates to Nodo coordinates
     ind = sensor_on_top.Map(x, y);
     if (ind < 11)
@@ -49,31 +55,33 @@ uint16_t ClockFace::map(int16_t x, int16_t y) {
     return sensor_on_top.Map(x, y) + NEOPIXEL_SIGNALS;
 #endif
   }
-  case LightSensorPosition::Bottom: {
+  case LightSensorPosition::Bottom:
+  {
     static NeoTopology<ColumnMajorAlternating270Layout> sensor_on_bottom(
         NEOPIXEL_ROWS, NEOPIXEL_COLUMNS);
     return sensor_on_bottom.Map(x, y) + NEOPIXEL_SIGNALS;
   }
   default:
     DCHECK(false, static_cast<int>(_position));
-    return 0;
   }
 }
 
-uint16_t ClockFace::mapMinute(Corners corner) {
-  switch (_position) {
+uint16_t ClockFace::mapMinute(Corners corner)
+{
+  switch (_position)
+  {
   case LightSensorPosition::Bottom:
     return (static_cast<uint16_t>(corner) + 2) % 4;
   case LightSensorPosition::Top:
     return static_cast<uint16_t>(corner);
   default:
     DCHECK(false, static_cast<int>(corner));
-    return 0;
   }
 }
 
 // Lit a segment in updateState.
-void ClockFace::updateSegment(int x, int y, int length) {
+void ClockFace::updateSegment(int x, int y, int length)
+{
   for (int i = x; i <= x + length - 1; i++)
     _state[map(i, y)] = true;
 }
@@ -136,9 +144,10 @@ void ClockFace::updateSegment(int x, int y, int length) {
 #define FR_M_QUARTS 0, 9, 6
 #define FR_M_PILE 6, 9, 4
 
-bool FrenchClockFace::stateForTime(int hour, int minute, int second,
-                                   bool show_ampm) {
-  if (hour == _hour && minute == _minute) {
+bool FrenchClockFace::stateForTime(int hour, int minute, int second, bool show_ampm)
+{
+  if (hour == _hour && minute == _minute)
+  {
     return false;
   }
   _hour = hour;
@@ -160,7 +169,8 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second,
   updateSegment(FR_S_IL);
   updateSegment(FR_S_EST);
 
-  switch (hour) {
+  switch (hour)
+  {
   case 0:
     updateSegment(FR_H_MINUIT);
     break;
@@ -215,7 +225,8 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second,
     DLOG("Invalid hour ");
     DLOGLN(hour);
   }
-  switch (hour) {
+  switch (hour)
+  {
   case 0:
   case 12:
     break;
@@ -228,7 +239,8 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second,
     break;
   }
 
-  switch (minute) {
+  switch (minute)
+  {
   case 0:
     break;
   case 5:
@@ -277,7 +289,9 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second,
     DLOGLN(minute);
   }
 
-  switch (leftover) {
+  switch (leftover)
+  {
+#ifdef NODO
   case 4:
     _state[113] = true;
   case 3: // fall through
@@ -286,6 +300,16 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second,
     _state[12] = true;
   case 1: // fall through
     _state[0] = true;
+#else
+  case 4:
+    _state[mapMinute(TopLeft)] = true;
+  case 3: // fall through
+    _state[mapMinute(BottomLeft)] = true;
+  case 2: // fall through
+    _state[mapMinute(BottomRight)] = true;
+  case 1: // fall through
+    _state[mapMinute(TopRight)] = true;
+#endif
   case 0: // fall through
     break;
   }
@@ -344,16 +368,10 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second,
 
 #define EN_M_OCLOCK 5, 9, 7
 
-bool EnglishClockFace::stateForTime(int hour, int minute, int second,
-                                    bool show_ampm) {
-#if 0
-  if (hour > 23 || minute > 59)
+bool EnglishClockFace::stateForTime(int hour, int minute, int second, bool show_ampm)
+{
+  if (hour == _hour && minute == _minute && show_ampm == _show_ampm)
   {
-    hour = 0;
-    minute = 0; // invalid time, set to midnight
-  }
-#endif
-  if (hour == _hour && minute == _minute && show_ampm == _show_ampm) {
     return false;
   }
   _hour = hour;
@@ -375,15 +393,20 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second,
   updateSegment(EN_S_IT);
   updateSegment(EN_S_IS);
 
-  if (show_ampm) {
-    if (hour < 13) {
+  if (show_ampm)
+  {
+    if (hour < 13)
+    {
       updateSegment(EN_H_AM);
-    } else {
+    }
+    else
+    {
       updateSegment(EN_H_PM);
     }
   }
 
-  switch (hour) {
+  switch (hour)
+  {
   case 0:
     updateSegment(EN_H_TWELVE);
     break;
@@ -439,7 +462,8 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second,
     DLOGLN(hour);
   }
 
-  switch (minute) {
+  switch (minute)
+  {
   case 0:
     updateSegment(EN_M_OCLOCK);
     break;
@@ -494,7 +518,9 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second,
     DLOGLN(minute);
   }
 
-  switch (leftover) {
+  switch (leftover)
+  {
+#ifdef NODO
   case 4:
     _state[113] = true;
   case 3: // fall through
@@ -503,6 +529,16 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second,
     _state[12] = true;
   case 1: // fall through
     _state[0] = true;
+#else
+  case 4:
+    _state[mapMinute(TopLeft)] = true;
+  case 3: // fall through
+    _state[mapMinute(BottomLeft)] = true;
+  case 2: // fall through
+    _state[mapMinute(BottomRight)] = true;
+  case 1: // fall through
+    _state[mapMinute(TopRight)] = true;
+#endif
   case 0: // fall through
     break;
   }
@@ -558,8 +594,10 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second,
 #define NL_M_HALF 0, 3, 4
 
 bool DutchClockFace::stateForTime(int hour, int minute, int second,
-                                  bool show_ampm) {
-  if (hour == _hour && minute == _minute) {
+                                  bool show_ampm)
+{
+  if (hour == _hour && minute == _minute)
+  {
     return false;
   }
   _hour = hour;
@@ -581,7 +619,8 @@ bool DutchClockFace::stateForTime(int hour, int minute, int second,
   updateSegment(NL_S_HET);
   updateSegment(NL_S_IS);
 
-  switch (hour) {
+  switch (hour)
+  {
   case 1:
   case 13:
     updateSegment(NL_H_EEN);
@@ -634,7 +673,8 @@ bool DutchClockFace::stateForTime(int hour, int minute, int second,
     DLOG("Invalid hour ");
     DLOGLN(hour);
   }
-  switch (hour) {
+  switch (hour)
+  {
   case 0:
   case 12:
     break;
@@ -642,7 +682,8 @@ bool DutchClockFace::stateForTime(int hour, int minute, int second,
     break;
   }
 
-  switch (minute) {
+  switch (minute)
+  {
   case 0:
     updateSegment(NL_H_UUR);
     break;
@@ -698,7 +739,8 @@ bool DutchClockFace::stateForTime(int hour, int minute, int second,
     DLOGLN(minute);
   }
 
-  switch (leftover) {
+  switch (leftover)
+  {
   case 4:
     _state[113] = true;
   case 3: // fall through
