@@ -7,14 +7,11 @@
 #include "ClockFace.h"
 
 // The pin to control the matrix
+#define NEOPIXEL_PIN 32
 #ifdef NODO
 #ifndef PICO
 #define NEOPIXEL_PIN 0
-#else
-#define NEOPIXEL_PIN 32
 #endif
-#else
-#define NEOPIXEL_PIN 32
 #endif
 //
 #define TIME_CHANGE_ANIMATION_SPEED 400
