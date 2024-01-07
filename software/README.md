@@ -42,7 +42,7 @@ This project relies on several additional libraries that need to be installed in
 - [IotWebConf](https://github.com/prampec/IotWebConf) by Balazs Kelemen **version 2.3.x** (not compatible with version 3 yet)
 - [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) by Michael C. Mille
 
-You are now ready to compile and flash the [`wordclock.ino` sketch](wordclock/wordclock.ino).
+You are now ready to compile and flash the `wordclock.ino` sketch.
 
 ## OTA update
 
