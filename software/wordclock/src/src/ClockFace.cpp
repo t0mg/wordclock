@@ -22,6 +22,11 @@ int ClockFace::pixelCount()
   return NEOPIXEL_COUNT;
 }
 
+void ClockFace::clearDisplay(void)
+{
+  std::fill(_state.begin(), _state.end(), false);
+}
+
 ClockFace::ClockFace(LightSensorPosition position) : _hour(-1), _minute(-1), _second(-1),
                                                      _position(position), _state(NEOPIXEL_COUNT){};
 
@@ -169,10 +174,7 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second, bool show_a
 
   DLOGLN("update state");
 
-  // TODO move to a more convenient place
-  // Reset the board to all black
-  for (int i = 0; i < NEOPIXEL_COUNT; i++)
-    _state[i] = false;
+  clearDisplay();
 
   int leftover = minute % 5;
   minute = minute - leftover;
@@ -383,9 +385,7 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second, bool show_
 
   DLOGLN("update state");
 
-  // Reset the board to all black
-  for (int i = 0; i < NEOPIXEL_COUNT; i++)
-    _state[i] = false;
+  clearDisplay();
 
   int leftover = minute % 5;
   minute = minute - leftover;
@@ -597,10 +597,7 @@ bool DutchClockFace::stateForTime(int hour, int minute, int second,
 
   DLOGLN("update state");
 
-  // TODO move to a more convenient place
-  // Reset the board to all black
-  for (int i = 0; i < NEOPIXEL_COUNT; i++)
-    _state[i] = false;
+  clearDisplay();
 
   int leftover = minute % 5;
   minute = minute - leftover;

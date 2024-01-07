@@ -35,6 +35,9 @@ protected:
   // Returns the index of the LED in the strip given a position on the grid.
   uint16_t map(int16_t x, int16_t y);
 
+  // Clear the display.
+  void clearDisplay();
+
   // The first four LED are the corner ones, counting minutes. They are assumed
   // to be wired in clockwise order, starting from the light sensor position.
   // mapMinute() returns the proper index based on desired location taking
