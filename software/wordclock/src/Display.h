@@ -8,11 +8,8 @@
 #include "nodo.h"
 
 // The pin to control the matrix
+#ifndef NEOPIXEL_PIN
 #define NEOPIXEL_PIN 32
-#ifdef NODO
-#ifndef PICO
-#define NEOPIXEL_PIN 0
-#endif
 #endif
 //
 #define TIME_CHANGE_ANIMATION_SPEED 400
