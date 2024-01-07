@@ -6,8 +6,11 @@
 #include "src/Iot.h"
 #include "src/nodo.h" // Nodo stuff
 RTC_DS3231 rtc;
-
+#ifdef NODO
 EnglishClockFace clockFace(ClockFace::LightSensorPosition::Top);
+#else
+EnglishClockFace clockFace(ClockFace::LightSensorPosition::Bottom);
+#endif
 // FrenchClockFace clockFace(ClockFace::LightSensorPosition::Top);
 // DutchClockFace clockFace(ClockFace::LightSensorPosition::Top);
 Display display(clockFace);
