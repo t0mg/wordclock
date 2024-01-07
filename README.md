@@ -39,7 +39,7 @@ You can oviously choose to customize any of the provided templates to eg create 
 
 ### Software
 
-The provided [source code](software/README.md) is using Arduino IDE with the [arduino-esp32 library](https://github.com/espressif/arduino-esp32) and a few others. It runs a web server though a WiFi captive portal in order to easily configure the clock from a computer or smartphone, and perform OTA firmware update ([demo video](https://youtu.be/WF_X5soabm0)).
+The provided [source code](software/README.md) is using [PlatformIO](https://platformio.org/) and Arduino IDE. It runs a web server though a WiFi captive portal in order to easily configure the clock from a computer or smartphone, and perform OTA firmware update ([demo video](https://youtu.be/WF_X5soabm0)).
 
 <p align="center">
   <img src="images/webui.png" width="200">
