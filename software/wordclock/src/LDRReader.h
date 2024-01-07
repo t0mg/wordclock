@@ -1,4 +1,5 @@
 #pragma once
+#include "nodo.h"
 
 /*
  * Light sensor. Reads the ambient light and build a representative value
