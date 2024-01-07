@@ -10,7 +10,7 @@ RTC_DS3231 rtc;
 #ifdef NODO
 EnglishClockFace clockFace(ClockFace::LightSensorPosition::Top);
 // FrenchClockFace clockFace(ClockFace::LightSensorPosition::Top);
-// DutchClockFace clockFace(ClockFace::LightSensorPosition::Top);
+//DutchClockFace clockFace(ClockFace::LightSensorPosition::Top);
 #else
 EnglishClockFace clockFace(ClockFace::LightSensorPosition::Bottom);
 // FrenchClockFace clockFace(ClockFace::LightSensorPosition::Bottom);
@@ -38,12 +38,19 @@ void setup()
   }
   display.setup();
   iot.setup();
+
 }
 
+long last_rtc_update =0;
 void loop()
 {
-  DateTime now = rtc.now();
-  display.updateForTime(now.hour(), now.minute(), now.second());
+  long ts_now = millis();
+  if ((ts_now - last_rtc_update) > 99) {
+    DateTime now = rtc.now();
+    display.updateForTime(now.hour(), now.minute(), now.second());
+    last_rtc_update = ts_now;
+  }
+
   display.loop();
   iot.loop();
 }
