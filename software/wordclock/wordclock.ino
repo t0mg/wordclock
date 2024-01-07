@@ -24,11 +24,11 @@ Iot iot(&display, &rtc);
 void setup()
 {
   setupLogging();
-#ifdef LED
-  pinMode(LED, OUTPUT);
+#ifdef LED_PIN
+  pinMode(LED_PIN, OUTPUT);
 #endif
-#ifdef SDA
-  Wire.begin(SDA, SCL);
+#ifdef SDA_PIN
+  Wire.begin(SDA_PIN, SCL_PIN);
 #endif
   bool result = rtc.begin(); // pins for RTC swapped over on V1.0
   DCHECK(result, "RTC didn't start");
