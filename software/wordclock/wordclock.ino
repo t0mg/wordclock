@@ -27,7 +27,9 @@ void setup()
 #ifdef LED
   pinMode(LED, OUTPUT);
 #endif
+#ifdef SDA
   Wire.begin(SDA, SCL);
+#endif
   bool result = rtc.begin(); // pins for RTC swapped over on V1.0
   DCHECK(result, "RTC didn't start");
   if (rtc.lostPower())
