@@ -5,6 +5,7 @@
 
 #include "BrightnessController.h"
 #include "ClockFace.h"
+#include "nodo.h"
 
 // The pin to control the matrix
 #define NEOPIXEL_PIN 32
