@@ -293,8 +293,8 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
       timezone_param_(
           "Time zone", "timezone", timezone_value_, IOT_CONFIG_VALUE_LENGTH,
           "number", DEFAULT_TIMEZONE, DEFAULT_TIMEZONE, locationOptions),
-      //manual_date_param_("Date", "date", manual_date_value_, IOT_CONFIG_VALUE_LENGTH, "date",
-      //            "yyyy-mm-dd", nullptr, "pattern='\\d{4}-\\d{1,2}-\\d{1,2}'"),
+      // manual_date_param_("Date", "date", manual_date_value_, IOT_CONFIG_VALUE_LENGTH, "date",
+      //             "yyyy-mm-dd", nullptr, "pattern='\\d{4}-\\d{1,2}-\\d{1,2}'"),
       manual_time_param_("Time", "time", manual_time_value_, IOT_CONFIG_VALUE_LENGTH, "time",
                          "hh:mm:ss", nullptr,
                          "pattern='\\d{1,2}:\\d{1,2}:\\d{1,2}' step='1'"),
@@ -342,7 +342,9 @@ void Iot::setup()
 {
   DCHECK(!initialized_, "[WARN] Trying to setup Iot multiple times.");
 
-  ntp_poll_timer_.setup([this]() { maybeSetRTCfromNTP_(); }, NTP_POLL_DELAY_SECONDS);
+  ntp_poll_timer_.setup([this]()
+                        { maybeSetRTCfromNTP_(); },
+                        NTP_POLL_DELAY_SECONDS);
 
   // Required to properly trigger default values, due to a bug in IotWebConf.
   // show_ampm_value_[0] = '\0';
@@ -365,12 +367,14 @@ void Iot::setup()
   iot_web_conf_.addParameter(&time_separator_);
   iot_web_conf_.addParameter(&ntp_enabled_param_);
   iot_web_conf_.addParameter(&timezone_param_);
-  //iot_web_conf_.addParameter(&manual_date_param_);
+  // iot_web_conf_.addParameter(&manual_date_param_);
   iot_web_conf_.addParameter(&manual_time_param_);
 
-  iot_web_conf_.setConfigSavedCallback([this]() { handleConfigSaved_(); });
+  iot_web_conf_.setConfigSavedCallback([this]()
+                                       { handleConfigSaved_(); });
 
-  iot_web_conf_.setWifiConnectionCallback([this]() { handleWifiConnection_(); });
+  iot_web_conf_.setWifiConnectionCallback([this]()
+                                          { handleWifiConnection_(); });
 
   iot_web_conf_.setHtmlFormatProvider(&customHtmlFormatProvider);
 
@@ -379,8 +383,10 @@ void Iot::setup()
   clearTransientParams_();
   updateClockFromParams_();
 
-  web_server_.on("/", [this] { handleHttpToRoot_(); });
-  web_server_.onNotFound([this] { iot_web_conf_.handleNotFound(); });
+  web_server_.on("/", [this]
+                 { handleHttpToRoot_(); });
+  web_server_.onNotFound([this]
+                         { iot_web_conf_.handleNotFound(); });
 
   initialized_ = true;
 }
@@ -415,9 +421,16 @@ void Iot::maybeSetRTCfromNTP_()
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo))
   {
+#ifdef LED_PIN
+    digitalWrite(LED_PIN, LOW);
+#endif
     DLOGLN("Failed to obtain time.");
     return;
   }
+#ifdef LED_PIN
+  else
+    digitalWrite(LED_PIN, HIGH);
+#endif
 
   rtc_->adjust(DateTime(timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
   DLOG("RTC set to:");

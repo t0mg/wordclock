@@ -4,6 +4,8 @@
 
 #include "ClockFace.h"
 
+#include "nodo.h" // Nodo stuff
+
 // The number of LEDs connected before the start of the matrix.
 #define NEOPIXEL_SIGNALS 4
 
@@ -36,7 +38,22 @@ uint16_t ClockFace::map(int16_t x, int16_t y)
   {
     static NeoTopology<ColumnMajorAlternating90Layout> sensor_on_top(
         NEOPIXEL_ROWS, NEOPIXEL_COLUMNS);
+#ifdef NODO
+    int ind, inc;
+    // do conversion from normal coordinates to Nodo coordinates
+    ind = sensor_on_top.Map(x, y);
+    if (ind < 11)
+      inc = 1; // one pixel before first row
+    else if (ind < 99)
+      inc = 2; // two pixels before second row
+    else
+      inc = 3; // three pixels
+    // mirror pixel grid
+    ind = 11 * (ind / 11) + 10 - ind % 11;
+    return ind + inc;
+#else
     return sensor_on_top.Map(x, y) + NEOPIXEL_SIGNALS;
+#endif
   }
   case LightSensorPosition::Bottom:
   {
@@ -56,7 +73,21 @@ uint16_t ClockFace::mapMinute(Corners corner)
   case LightSensorPosition::Bottom:
     return (static_cast<uint16_t>(corner) + 2) % 4;
   case LightSensorPosition::Top:
+#ifdef NODO
+    switch (static_cast<uint16_t>(corner))
+    {
+    case 0:
+      return 113;
+    case 1:
+      return 101;
+    case 2:
+      return 12;
+    default:
+      return 0;
+    }
+#else
     return static_cast<uint16_t>(corner);
+#endif
   default:
     DCHECK(false, static_cast<int>(corner));
   }
@@ -367,7 +398,7 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second, bool show_
 
   if (show_ampm)
   {
-    if (hour < 13)
+    if (hour < 12) // Midday is PM 
     {
       updateSegment(EN_H_AM);
     }
@@ -703,13 +734,13 @@ bool DutchClockFace::stateForTime(int hour, int minute, int second,
   switch (leftover)
   {
   case 4:
-    _state[113] = true;
+    _state[mapMinute(TopLeft)] = true;
   case 3: // fall through
-    _state[101] = true;
+    _state[mapMinute(BottomLeft)] = true;
   case 2: // fall through
-    _state[12] = true;
+    _state[mapMinute(BottomRight)] = true;
   case 1: // fall through
-    _state[0] = true;
+    _state[mapMinute(TopRight)] = true;
   case 0: // fall through
     break;
   }

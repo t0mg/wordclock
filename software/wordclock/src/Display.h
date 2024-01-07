@@ -5,10 +5,12 @@
 
 #include "BrightnessController.h"
 #include "ClockFace.h"
+#include "nodo.h"
 
 // The pin to control the matrix
+#ifndef NEOPIXEL_PIN
 #define NEOPIXEL_PIN 32
-
+#endif
 //
 #define TIME_CHANGE_ANIMATION_SPEED 400
 

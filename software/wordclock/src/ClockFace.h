@@ -74,3 +74,11 @@ public:
 
   virtual bool stateForTime(int hour, int minute, int second, bool show_ampm);
 };
+
+class DutchClockFace : public ClockFace
+{
+public:
+  DutchClockFace(LightSensorPosition position) : ClockFace(position){};
+
+  virtual bool stateForTime(int hour, int minute, int second, bool show_ampm);
+};
