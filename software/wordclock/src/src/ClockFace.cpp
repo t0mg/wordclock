@@ -665,14 +665,6 @@ bool DutchClockFace::stateForTime(int hour, int minute, int second,
     DLOG("Invalid hour ");
     DLOGLN(hour);
   }
-  switch (hour)
-  {
-  case 0:
-  case 12:
-    break;
-  default:
-    break;
-  }
 
   switch (minute)
   {
