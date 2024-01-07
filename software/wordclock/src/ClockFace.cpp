@@ -398,7 +398,7 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second, bool show_
 
   if (show_ampm)
   {
-    if (hour < 13)
+    if (hour < 12) // Midday is PM 
     {
       updateSegment(EN_H_AM);
     }
