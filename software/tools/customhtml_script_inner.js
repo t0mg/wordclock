@@ -9,16 +9,11 @@
 document.addEventListener(
     'DOMContentLoaded',
     function (e) {
-        
-        // Replace standard iotwebconf labels
-        const iwc1 = document.querySelector('label[for=iwcThingName]');
-        if (iwc1) {
-            iwc1.innerText = "Clock name";
-        }
-        const iwc2 = document.querySelector('label[for=iwcApPassword]');
-        if (iwc2) {
-            iwc2.innerText = "AP password (login: admin)";
-        }
+
+        // Replace text inputs with desired type
+        document.querySelectorAll("[data-type]").forEach((el) => {
+          el.type = el.getAttribute("data-type");
+        });
 
         // Add a toggle to reveal values in password fields.
         document.querySelectorAll('input[type=password]').forEach((p) => {
@@ -105,7 +100,7 @@ document.addEventListener(
             setLabel();
         });
 
-        // Show/hide config fields based on NTP setting
+        // // Show/hide config fields based on NTP setting
         const ntpEl = document.getElementById("ntp_enabled");
         if (ntpEl) {
             const toggleTimeFields = (ntpEnabled) => {

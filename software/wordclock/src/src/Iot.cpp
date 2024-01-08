@@ -1,5 +1,6 @@
 #include "logging.h"
 #include "Iot.h"
+#include <IotWebConfESP32HTTPUpdateServer.h>
 #include "Timezones.h"
 
 #include <NeoPixelBus.h>
@@ -35,11 +36,11 @@ namespace
 
   // Custom Javascript block that will be added to the header.
   // See customconfig.js for human-readable version.
-  const char CUSTOMHTML_SCRIPT_INNER[] PROGMEM = "document.addEventListener(\"DOMContentLoaded\",function(d){if(d=document.querySelector(\"label[for=iwcThingName]\"))d.innerText=\"Clock name\";if(d=document.querySelector(\"label[for=iwcApPassword]\"))d.innerText=\"AP password (login: admin)\";document.querySelectorAll(\"input[type=password]\").forEach(function(a){var b=document.createElement(\"input\");b.classList.add(\"pwtoggle\");b.type=\"button\";b.value=\"\\ud83d\\udc41\\ufe0f\";a.insertAdjacentElement(\"afterend\",b);b.onclick=function(){\"password\"===a.type?(a.type=\
-\"text\",b.value=\"\\ud83d\\udd12\"):(a.type=\"password\",b.value=\"\\ud83d\\udc41\\ufe0f\")}});(d=document.querySelector(\"form\"))&&d.addEventListener(\"submit\",function(){var a=document.querySelector(\"button[type=submit]\");a.innerText=\"Saving...\";a.toggleAttribute(\"disabled\",!0)});document.querySelectorAll(\"input[data-options]\").forEach(function(a){var b=a.value,h=a.getAttribute(\"data-options\").split(\"|\"),f=document.createElement(\"select\");f.name=a.name;f.id=a.id;\"\"===b&&f.appendChild(document.createElement(\"option\"));\
-var c=null;h.forEach(function(m,n){var e=m.split(\"/\"),g=m;1<e.length?(g=e.splice(0,1)[0],c&&g==c.label||(c&&f.appendChild(c),c=document.createElement(\"optgroup\"),c.label=g),g=e.join(\" / \")):c&&(f.appendChild(c),c=null);e=document.createElement(\"option\");e.value=n;e.innerText=g;n==b&&e.toggleAttribute(\"selected\");c?c.appendChild(e):f.appendChild(e)});c&&f.appendChild(c);a.id+=\"-d\";a.insertAdjacentElement(\"beforebegin\",f);a.parentElement.removeChild(a)});document.querySelectorAll(\"input[type=range]\").forEach(function(a){var b=\
-a.getAttribute(\"data-labels\"),h=b&&b.split(\"|\");b=function(){a.setAttribute(\"data-label\",h?h[parseInt(a.value,10)]||a.value:a.value)};a.oninput=b;b()});var k=document.getElementById(\"ntp_enabled\");if(k){var p=function(a){document.querySelectorAll(\"#date, #time\").forEach(function(b){b.parentElement.style.display=a?\"none\":\"\"});document.getElementById(\"timezone\").parentElement.style.display=a?\"\":\"none\"};k.addEventListener(\"change\",function(a){p(1==k.value)});p(1==k.value)}var l=document.querySelector(\"input[type=color]\");\
-l&&(d=function(){document.querySelector(\".logoContainer\").style.backgroundColor=l.value},l.addEventListener(\"input\",d),d())});";
+  const char CUSTOMHTML_SCRIPT_INNER[] PROGMEM ="document.addEventListener(\"DOMContentLoaded\",function(f){document.querySelectorAll(\"[data-type]\").forEach(function(a){a.type=a.getAttribute(\"data-type\")});document.querySelectorAll(\"input[type=password]\").forEach(function(a){var b=document.createElement(\"input\");b.classList.add(\"pwtoggle\");b.type=\"button\";b.value=\"\\ud83d\\udc41\\ufe0f\";a.insertAdjacentElement(\"afterend\",b);b.onclick=function(){\"password\"===a.type?(a.type=\"text\",b.value=\"\\ud83d\\udd12\"):(a.type=\"password\",b.value=\"\\ud83d\\udc41\\ufe0f\")}});\
+(f=document.querySelector(\"form\"))&&f.addEventListener(\"submit\",function(){var a=document.querySelector(\"button[type=submit]\");a.innerText=\"Saving...\";a.toggleAttribute(\"disabled\",!0)});document.querySelectorAll(\"input[data-options]\").forEach(function(a){var b=a.value,h=a.getAttribute(\"data-options\").split(\"|\"),e=document.createElement(\"select\");e.name=a.name;e.id=a.id;\"\"===b&&e.appendChild(document.createElement(\"option\"));var c=null;h.forEach(function(m,n){var d=m.split(\"/\"),g=m;1<d.length?(g=d.splice(0,\
+1)[0],c&&g==c.label||(c&&e.appendChild(c),c=document.createElement(\"optgroup\"),c.label=g),g=d.join(\" / \")):c&&(e.appendChild(c),c=null);d=document.createElement(\"option\");d.value=n;d.innerText=g;n==b&&d.toggleAttribute(\"selected\");c?c.appendChild(d):e.appendChild(d)});c&&e.appendChild(c);a.id+=\"-d\";a.insertAdjacentElement(\"beforebegin\",e);a.parentElement.removeChild(a)});document.querySelectorAll(\"input[type=range]\").forEach(function(a){var b=a.getAttribute(\"data-labels\"),h=b&&b.split(\"|\");b=function(){a.setAttribute(\"data-label\",\
+h?h[parseInt(a.value,10)]||a.value:a.value)};a.oninput=b;b()});var k=document.getElementById(\"ntp_enabled\");if(k){var p=function(a){document.querySelectorAll(\"#date, #time\").forEach(function(b){b.parentElement.style.display=a?\"none\":\"\"});document.getElementById(\"timezone\").parentElement.style.display=a?\"\":\"none\"};k.addEventListener(\"change\",function(a){p(1==k.value)});p(1==k.value)}var l=document.querySelector(\"input[type=color]\");l&&(f=function(){document.querySelector(\".logoContainer\").style.backgroundColor=\
+l.value},l.addEventListener(\"input\",f),f())});";
 
   // Custom style added to the style tag.
   const char CUSTOMHTML_STYLE_INNER[] PROGMEM = "\n\
@@ -126,18 +127,18 @@ form + div {padding: 20px 0 15px 0;}\
 body > div > div:last-child {\
   margin-top: -20px;\
   float: right;}\
-}\n";
+\n";
 
   // Custom HTML element will be added at the beginning of the body element.
   const char CUSTOMHTML_BODY_INNER_START[] PROGMEM = "<header><div class=\"logoContainer\"><img class=\"logo\" src=\"";
   const char CUSTOMHTML_BODY_INNER_END[] PROGMEM = "\"/></div></header>\n";
 
-  class CustomHtmlFormatProvider : public IotWebConfHtmlFormatProvider
+  class CustomHtmlFormatProvider : public iotwebconf::HtmlFormatProvider
   {
   protected:
     String getHead() override
     {
-      String head = IotWebConfHtmlFormatProvider::getHead();
+      String head = iotwebconf::HtmlFormatProvider::getHead();
       head.replace("{v}", THING_NAME);
       return head + String(FPSTR(CUSTOM_HTML_META_START)) +
              String(FPSTR(LOGO_DATA_URI)) +
@@ -145,12 +146,12 @@ body > div > div:last-child {\
     }
     String getScriptInner() override
     {
-      return IotWebConfHtmlFormatProvider::getScriptInner() +
+      return iotwebconf::HtmlFormatProvider::getScriptInner() +
              String(FPSTR(CUSTOMHTML_SCRIPT_INNER));
     }
     String getStyleInner() override
     {
-      return IotWebConfHtmlFormatProvider::getStyleInner() +
+      return iotwebconf::HtmlFormatProvider::getStyleInner() +
              String(FPSTR(CUSTOMHTML_STYLE_INNER));
     }
     String getBodyInner() override
@@ -158,7 +159,7 @@ body > div > div:last-child {\
       return String(FPSTR(CUSTOMHTML_BODY_INNER_START)) +
              String(FPSTR(LOGO_DATA_URI)) +
              String(FPSTR(CUSTOMHTML_BODY_INNER_END)) +
-             IotWebConfHtmlFormatProvider::getBodyInner();
+             iotwebconf::HtmlFormatProvider::getBodyInner();
     }
   };
   // An instance must be created from the class defined above.
@@ -272,32 +273,29 @@ body > div > div:last-child {\
 
 Iot::Iot(Display *display, RTC_DS3231 *rtc)
     : web_server_(WEB_SERVER_PORT), display_(display), rtc_(rtc),
-      display_separator_("Display"),
+ 
       color_param_("Color", "color", color_value_,
-                   IOT_CONFIG_VALUE_LENGTH, "color", "#RRGGBB", "#FFFFFF",
-                   "pattern='#[0-9a-fA-F]{6}' "
+                   IOT_CONFIG_VALUE_LENGTH, "#RRGGBB", "#FFFFFF",
+                   "data-type='color' pattern='#[0-9a-fA-F]{6}' "
                    "style='border-width: 1px; padding: 1px;'"),
       show_ampm_param_(
           "AM/PM indicator", "show_ampm", show_ampm_value_,
-          IOT_CONFIG_VALUE_LENGTH, "range", "0", "0",
-          "style='width: 40px;' data-labels='Off|On' min='0' max='1' step='1'"),
+          IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
       ldr_sensitivity_param_(
           "Light sensor sensitivity", "ldr_sensitivity", ldr_sensitivity_value_,
-          IOT_CONFIG_VALUE_LENGTH, "range", "5", "5",
-          "min='0' max='10' step='1' data-labels='Off'"),
-      time_separator_("Time"),
+          IOT_CONFIG_VALUE_LENGTH, "5", 0, 10, 1, "data-labels='Off'"),
       ntp_enabled_param_(
           "Use network time (requires WiFi)", "ntp_enabled", ntp_enabled_value_,
-          IOT_CONFIG_VALUE_LENGTH, "range", "0", "0",
-          "style='width: 40px;' data-labels='Off|On' min='0' max='1' step='1'"),
+          IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
       timezone_param_(
           "Time zone", "timezone", timezone_value_, IOT_CONFIG_VALUE_LENGTH,
-          "number", DEFAULT_TIMEZONE, DEFAULT_TIMEZONE, locationOptions),
-      // manual_date_param_("Date", "date", manual_date_value_, IOT_CONFIG_VALUE_LENGTH, "date",
-      //             "yyyy-mm-dd", nullptr, "pattern='\\d{4}-\\d{1,2}-\\d{1,2}'"),
-      manual_time_param_("Time", "time", manual_time_value_, IOT_CONFIG_VALUE_LENGTH, "time",
-                         "hh:mm:ss", nullptr,
-                         "pattern='\\d{1,2}:\\d{1,2}:\\d{1,2}' step='1'"),
+          DEFAULT_TIMEZONE, DEFAULT_TIMEZONE, locationOptions),
+      manual_date_param_("Date", "date", manual_date_value_, IOT_CONFIG_VALUE_LENGTH,
+                  "yyyy-mm-dd", nullptr, "data-type='date' pattern='\\d{4}-\\d{1,2}-\\d{1,2}'"),
+      manual_time_param_("Time", "time", manual_time_value_, IOT_CONFIG_VALUE_LENGTH,
+                         "hh:mm:ss", nullptr, "data-type='time' pattern='\\d{1,2}:\\d{1,2}:\\d{1,2}' step='1'"),
+      time_group_("time_group", "Time"),
+      display_group_("display_group", "Display"),
       iot_web_conf_(THING_NAME, &dns_server_, &web_server_,
                     INITIAL_WIFI_AP_PASSWORD, CONFIG_VERSION)
 {
@@ -346,29 +344,26 @@ void Iot::setup()
                         { maybeSetRTCfromNTP_(); },
                         NTP_POLL_DELAY_SECONDS);
 
-  // Required to properly trigger default values, due to a bug in IotWebConf.
-  // show_ampm_value_[0] = '\0';
-  // ldr_sensitivity_value_[0] = '\0';
-  // color_value_[0] = '\0';
-  // ntp_enabled_value_[0] = '\0';
-  // timezone_value_[0] = '\0';
-  // clearTransientParams_();
   this->show_ampm_value_[0] = '\0';
   this->ldr_sensitivity_value_[0] = '\0';
   this->color_value_[0] = '\0';
   this->ntp_enabled_value_[0] = '\0';
   this->timezone_value_[0] = '\0';
 
-  iot_web_conf_.setupUpdateServer(&http_updater_);
-  iot_web_conf_.addParameter(&display_separator_);
-  iot_web_conf_.addParameter(&show_ampm_param_);
-  iot_web_conf_.addParameter(&ldr_sensitivity_param_);
-  iot_web_conf_.addParameter(&color_param_);
-  iot_web_conf_.addParameter(&time_separator_);
-  iot_web_conf_.addParameter(&ntp_enabled_param_);
-  iot_web_conf_.addParameter(&timezone_param_);
-  // iot_web_conf_.addParameter(&manual_date_param_);
-  iot_web_conf_.addParameter(&manual_time_param_);
+  iot_web_conf_.setupUpdateServer(
+    [this](const char* updatePath) { http_updater_.setup(&web_server_, updatePath); },
+    [this](const char* userName, char* password) { http_updater_.updateCredentials(userName, password); });
+
+  display_group_.addItem(&show_ampm_param_);
+  display_group_.addItem(&ldr_sensitivity_param_);
+  display_group_.addItem(&color_param_);
+  iot_web_conf_.addParameterGroup(&display_group_);
+
+  time_group_.addItem(&ntp_enabled_param_);
+  time_group_.addItem(&timezone_param_);
+  // time_group_.addItem(&manual_date_param_);
+  time_group_.addItem(&manual_time_param_);
+  iot_web_conf_.addParameterGroup(&time_group_);
 
   iot_web_conf_.setConfigSavedCallback([this]()
                                        { handleConfigSaved_(); });
@@ -377,6 +372,10 @@ void Iot::setup()
                                           { handleWifiConnection_(); });
 
   iot_web_conf_.setHtmlFormatProvider(&customHtmlFormatProvider);
+
+  iot_web_conf_.getSystemParameterGroup()->label = "Network";
+  iot_web_conf_.getThingNameParameter()->label = "Clock name";
+  iot_web_conf_.getApPasswordParameter()->label = "AP password (login: admin)";
 
   iot_web_conf_.init();
 

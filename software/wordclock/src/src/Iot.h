@@ -3,8 +3,10 @@
 
 #include "Display.h"
 #include "Timer.h"
+#include "IotRangeValueParameter.h"
 
 #include <IotWebConf.h>
+#include <IotWebConfESP32HTTPUpdateServer.h>
 #include <RTClib.h>
 
 // Maximum length of a single IoT configuration value.
@@ -62,43 +64,43 @@ private:
   Timer ntp_poll_timer_;
 
   // Enables NTP time setting.
-  IotWebConfParameter ntp_enabled_param_;
+  IotRangeValueParameter ntp_enabled_param_;
   // Value of the NTP setting option.
   char ntp_enabled_value_[IOT_CONFIG_VALUE_LENGTH];
 
   // The timezone index from available options.
-  IotWebConfParameter timezone_param_;
+  iotwebconf::NumberParameter timezone_param_;
   // Index of the selected timezone.
   char timezone_value_[IOT_CONFIG_VALUE_LENGTH];
 
   // Manual date setting. Transient.
-  IotWebConfParameter manual_date_param_;
+  iotwebconf::TextParameter manual_date_param_;
   // Date parameter value.
   char manual_date_value_[IOT_CONFIG_VALUE_LENGTH];
 
   // Manual time setting. Transient.
-  IotWebConfParameter manual_time_param_;
+  iotwebconf::TextParameter manual_time_param_;
   // Time parameter value.
   char manual_time_value_[IOT_CONFIG_VALUE_LENGTH];
 
   // Enable AM/PM display.
-  IotWebConfParameter show_ampm_param_;
+  IotRangeValueParameter show_ampm_param_;
   // Value of the LDR sensitivity parameter.
   char show_ampm_value_[IOT_CONFIG_VALUE_LENGTH];
 
   // Sensitivity parameter for the LDR.
-  IotWebConfParameter ldr_sensitivity_param_;
+  IotRangeValueParameter ldr_sensitivity_param_;
   // Value of the LDR sensitivity parameter.
   char ldr_sensitivity_value_[IOT_CONFIG_VALUE_LENGTH];
 
   // Text color parameter.
-  IotWebConfParameter color_param_;
+  iotwebconf::TextParameter color_param_;
   // Value of the color parameter.
   char color_value_[IOT_CONFIG_VALUE_LENGTH];
 
-  // Config form separators.
-  IotWebConfSeparator time_separator_;
-  IotWebConfSeparator display_separator_;
+  // Config form groups.
+  iotwebconf::ParameterGroup time_group_;
+  iotwebconf::ParameterGroup display_group_;
 
   // IotWebConf interface handle.
   IotWebConf iot_web_conf_;
