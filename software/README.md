@@ -18,7 +18,7 @@ This section of the [Wordclock project](../README.md) covers the software runnin
 This is the recommended method as it makes it easy to manage dependencies and build for a specific flavor of ESP32. If you do not want to use PlatformIO, see [next section](#build-with-arduino-ide) for detailed instructions.
 
 1. [Install PlatformIO and VS Code](https://docs.platformio.org/en/latest/integration/ide/pioide.html)
-2. Load the project in VS Code (select the folder containing `plaftformio.ini`)
+2. Load the project in VS Code (select the folder containing `platformio.ini`)
 3. Verify that the target board in `platformio.ini` matches your ESP32 hardware
 4. Build and upload
 
@@ -39,7 +39,7 @@ _Note: you might also need to install the appropriate USB driver for your ESP32 
 This project relies on several additional libraries that need to be installed in the Arduino IDE. Open the Library Manager (`Tools > Manage Libraries...`), then search an add the following:
 
 - [RTClib](https://github.com/adafruit/RTClib) by Adafruit
-- [IotWebConf](https://github.com/prampec/IotWebConf) by Balazs Kelemen **version 2.3.x** (not compatible with version 3 yet)
+- [IotWebConf](https://github.com/prampec/IotWebConf) by Balazs Kelemen
 - [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) by Michael C. Mille
 
 You are now ready to compile and flash the `wordclock.ino` sketch.
