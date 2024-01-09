@@ -40,6 +40,7 @@ void Timer::stop()
     {
         return;
     }
+    timerDetachInterrupt(timer_);
     timerEnd(timer_);
     timer_ = NULL;
 }
