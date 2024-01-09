@@ -68,6 +68,7 @@ uint16_t ClockFace::map(int16_t x, int16_t y)
   }
   default:
     DCHECK(false, static_cast<int>(_position));
+    return 0;
   }
 }
 
@@ -95,6 +96,7 @@ uint16_t ClockFace::mapMinute(Corners corner)
 #endif
   default:
     DCHECK(false, static_cast<int>(corner));
+    return 0;
   }
 }
 
