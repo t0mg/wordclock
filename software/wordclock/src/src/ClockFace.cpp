@@ -735,3 +735,218 @@ bool DutchClockFace::stateForTime(int hour, int minute, int second,
   }
   return true;
 }
+
+// Constants to match the ItalianClockFace.
+//
+// Letters in lowercase below are not used by the clock.
+
+//SONOrLEbORE
+//ÈrLUNAsDUEz
+//TREOTTONOVE
+//DIECIUNDICI
+//DODICISETTE
+//QUATTROcSEI
+//CINQUEaMENO
+//EcUNoQUARTO
+//VENTICINQUE
+//DIECIpMEZZA
+
+// All the segments of words on the board. The first too numbers are the
+// coordinate of the first letter of the word, the last is the length. A word
+// must always be on one row.
+
+
+#define IT_S_SONO 0, 0, 4
+#define IT_S_LE 5, 0, 2
+#define IT_S_E 0, 1, 1
+#define IT_S_ORE 8, 0, 3
+
+#define IT_H_LUNA 2, 1, 4
+#define IT_H_DUE 7, 1, 3
+#define IT_H_TRE 0, 2, 3
+#define IT_H_QUATTRO 0, 5, 7
+#define IT_H_CINQUE 0, 6, 6
+#define IT_H_SEI 8, 5, 3
+#define IT_H_SETTE 6, 4, 5
+#define IT_H_OTTO 3, 2, 4
+#define IT_H_NOVE 7, 2, 4
+#define IT_H_DIECI 0, 3, 5
+#define IT_H_UNDICI 5, 3, 6
+#define IT_H_DODICI 0, 4, 6
+
+#define IT_M_E 0, 7, 1
+#define IT_M_MENO 7, 6, 4
+#define IT_M_DIECI 0, 9, 5
+#define IT_M_UN 2, 7, 2
+#define IT_M_QUARTO 5, 7, 6
+#define IT_M_VENTI 0, 8, 5
+#define IT_M_CINQUE 5, 8, 6
+#define IT_M_MEZZA 6, 9, 5
+
+
+
+bool ItalianClockFace::stateForTime(int hour, int minute, int second, bool show_ampm)
+{
+  if (hour == _hour && minute == _minute)
+  {
+    return false;
+  }
+  _hour = hour;
+  _minute = minute;
+
+  DLOGLN("update state");
+
+  // Reset the board to all black
+  for (int i = 0; i < NEOPIXEL_COUNT; i++)
+    _state[i] = false;
+
+  int leftover = minute % 5;
+  minute = minute - leftover;
+
+  if (minute >= 35)
+    hour = (hour + 1) % 24; // Switch to "TO" minutes the next hour
+
+  // Special case for one o'clock
+  if (hour == 1 || hour == 13)
+  {
+    updateSegment(IT_S_E);
+    updateSegment(IT_H_LUNA);
+  }
+  else // Normal case for other hours
+  {
+    updateSegment(IT_S_SONO);
+    updateSegment(IT_S_LE);
+    switch (hour)
+    {
+    case 0:
+      updateSegment(IT_H_DODICI);
+      break;
+    case 2:
+    case 14:
+      updateSegment(IT_H_DUE);
+      break;
+    case 3:
+    case 15:
+      updateSegment(IT_H_TRE);
+      break;
+    case 4:
+    case 16:
+      updateSegment(IT_H_QUATTRO);
+      break;
+    case 5:
+    case 17:
+      updateSegment(IT_H_CINQUE);
+      break;
+    case 6:
+    case 18:
+      updateSegment(IT_H_SEI);
+      break;
+    case 7:
+    case 19:
+      updateSegment(IT_H_SETTE);
+      break;
+    case 8:
+    case 20:
+      updateSegment(IT_H_OTTO);
+      break;
+    case 9:
+    case 21:
+      updateSegment(IT_H_NOVE);
+      break;
+    case 10:
+    case 22:
+      updateSegment(IT_H_DIECI);
+      break;
+    case 11:
+    case 23:
+      updateSegment(IT_H_UNDICI);
+      break;
+    case 12:
+      updateSegment(IT_H_DODICI);
+      break;
+    default:
+      DLOG("Invalid hour ");
+      DLOGLN(hour);
+    }
+  }
+
+switch (minute)
+{
+case 0:
+  // Check if the hour value is 1 or 13
+  if (hour != 1 && hour != 13)
+  {
+    // If not, display "ORE"
+    updateSegment(IT_S_ORE);
+  }
+  break;
+// The rest of the switch statement
+
+  case 5:
+    updateSegment(IT_M_E);
+    updateSegment(IT_M_CINQUE);
+    break;
+  case 10:
+    updateSegment(IT_M_E);
+    updateSegment(IT_M_DIECI);
+    break;
+  case 15:
+    updateSegment(IT_M_E);
+    updateSegment(IT_M_UN);
+    updateSegment(IT_M_QUARTO);
+    break;
+  case 20:
+    updateSegment(IT_M_E);
+    updateSegment(IT_M_VENTI);
+    break;
+  case 25:
+    updateSegment(IT_M_E);
+    updateSegment(IT_M_VENTI);
+    updateSegment(IT_M_CINQUE);
+    break;
+  case 30:
+    updateSegment(IT_M_E);
+    updateSegment(IT_M_MEZZA);
+    break;
+  case 35:
+    updateSegment(IT_M_MENO);
+    updateSegment(IT_M_VENTI);
+    updateSegment(IT_M_CINQUE);
+    break;
+  case 40:
+    updateSegment(IT_M_MENO);
+    updateSegment(IT_M_VENTI);
+    break;
+  case 45:
+    updateSegment(IT_M_MENO);
+    updateSegment(IT_M_UN);
+    updateSegment(IT_M_QUARTO);
+    break;
+  case 50:
+    updateSegment(IT_M_MENO);
+    updateSegment(IT_M_DIECI);
+    break;
+  case 55:
+    updateSegment(IT_M_MENO);
+    updateSegment(IT_M_CINQUE);
+    break;
+  default:
+    DLOG("Invalid minute ");
+    DLOGLN(minute);
+  }
+
+  switch (leftover)
+  {
+  case 4:
+    _state[mapMinute(TopLeft)] = true;
+  case 3: // fall through
+    _state[mapMinute(BottomLeft)] = true;
+  case 2: // fall through
+    _state[mapMinute(BottomRight)] = true;
+  case 1: // fall through
+    _state[mapMinute(TopRight)] = true;
+  case 0: // fall through
+    break;
+  }
+  return true;
+}
