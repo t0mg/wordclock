@@ -125,7 +125,14 @@ void ClockFace::updateSegment(int x, int y, int length)
 // ETTROISDEMI
 // VINGT-CINQk
 // QUARTSPILE!
-//
+
+// Alt version: same except last 3 lines
+// ETbQUARTpmm
+// VINGT-CINQu
+// ETyDEMIEpam
+
+// Comment out to not use alt version
+#define FR_ALT
 
 // All the segments of words on the board. The first too numbers are the
 // coordinate of the first letter of the word, the last is the length. A word
@@ -154,15 +161,21 @@ void ClockFace::updateSegment(int x, int y, int length)
 #define FR_M_MOINS 0, 6, 5
 #define FR_M_LE 6, 6, 2
 #define FR_M_ET 0, 7, 2
-#define FR_M_TROIS 2, 7, 5
+// #define FR_M_TROIS 2, 7, 5 -- unused
 
 #define FR_M_DIX 8, 6, 3
 #define FR_M_VINGT 0, 8, 5
 #define FR_M_VINGTCINQ 0, 8, 10
 #define FR_M_CINQ 6, 8, 4
+#ifdef FR_ALT
+#define FR_M_ET2 0, 9, 2
+#define FR_M_DEMI 3, 9, 5
+#define FR_M_QUART 3, 7, 5
+#else
 #define FR_M_DEMI 7, 7, 4
 #define FR_M_QUART 0, 9, 5
-#define FR_M_QUARTS 0, 9, 6
+#endif
+// #define FR_M_QUARTS 0, 9, 6 -- unused
 #define FR_M_PILE 6, 9, 4
 
 bool FrenchClockFace::stateForTime(int hour, int minute, int second, bool show_ampm)
@@ -278,7 +291,11 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second, bool show_a
     updateSegment(FR_M_VINGTCINQ);
     break;
   case 30:
+    #ifdef FR_ALT
+    updateSegment(FR_M_ET2);
+    #else
     updateSegment(FR_M_ET);
+    #endif
     updateSegment(FR_M_DEMI);
     break;
   case 35:

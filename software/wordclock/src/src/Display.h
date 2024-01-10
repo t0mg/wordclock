@@ -22,6 +22,7 @@ public:
   void setup();
   void loop();
   void setColor(const RgbColor &color);
+  void runBootAnimation();
 
   // Sets the sensor sentivity of the brightness controller.
   void setSensorSentivity(int value) { _brightnessController.setSensorSensitivity(value); }
@@ -59,4 +60,21 @@ private:
   // second to a little bit more than 10 minutes.
   //
   NeoPixelAnimator _animations;
+
+  // Reserved for boot animation.
+  NeoPixelAnimator _bootAnimations;
+
+  static double _distance(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
+    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+  }
+
+  uint16_t _circleCount = 0;
+  RgbColor _circleColor;
+  uint16_t _circleCenterX = 5;
+  uint16_t _circleCenterY = 11;
+  void _circle(uint16_t x, uint16_t y, int radius, RgbColor color);
+  void _colorCornerPixels(RgbColor color);
+  void _circleAnimUpdate(const AnimationParam &param);
+  void _fadeAll(uint8_t darkenBy);
+  void _fadeAnimUpdate(const AnimationParam &param);
 };

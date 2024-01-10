@@ -28,15 +28,8 @@ public:
   // is called.
   const std::vector<bool> &getState() { return _state; };
 
-protected:
-  // Lights up a segment in the state.
-  void updateSegment(int x, int y, int length);
-
   // Returns the index of the LED in the strip given a position on the grid.
   uint16_t map(int16_t x, int16_t y);
-
-  // Clear the display.
-  void clearDisplay();
 
   // The first four LED are the corner ones, counting minutes. They are assumed
   // to be wired in clockwise order, starting from the light sensor position.
@@ -50,6 +43,13 @@ protected:
     TopRight
   };
   uint16_t mapMinute(Corners corner);
+
+protected:
+  // Lights up a segment in the state.
+  void updateSegment(int x, int y, int length);
+
+  // Clear the display.
+  void clearDisplay();
 
   // To avoid refreshing to often, this stores the time of the previous UI
   // update. If nothing changed, there will be no interuption of animations.

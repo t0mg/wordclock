@@ -73,11 +73,6 @@ private:
   // Index of the selected timezone.
   char timezone_value_[IOT_CONFIG_VALUE_LENGTH];
 
-  // Manual date setting. Transient.
-  iotwebconf::TextParameter manual_date_param_;
-  // Date parameter value.
-  char manual_date_value_[IOT_CONFIG_VALUE_LENGTH];
-
   // Manual time setting. Transient.
   iotwebconf::TextParameter manual_time_param_;
   // Time parameter value.
@@ -97,6 +92,11 @@ private:
   iotwebconf::TextParameter color_param_;
   // Value of the color parameter.
   char color_value_[IOT_CONFIG_VALUE_LENGTH];
+
+  // Enables the boot animation.
+  IotRangeValueParameter boot_animation_param_;
+  // Value of the boot animation setting option.
+  char boot_animation_enabled_value_[IOT_CONFIG_VALUE_LENGTH];
 
   // Config form groups.
   iotwebconf::ParameterGroup time_group_;

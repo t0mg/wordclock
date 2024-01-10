@@ -104,9 +104,7 @@ document.addEventListener(
         const ntpEl = document.getElementById("ntp_enabled");
         if (ntpEl) {
             const toggleTimeFields = (ntpEnabled) => {
-                document.querySelectorAll('#date, #time').forEach((el) => {
-                    el.parentElement.style.display = ntpEnabled ? 'none' : '';
-                });
+                document.getElementById('time').parentElement.style.display = ntpEnabled ? 'none' : '';
                 document.getElementById('timezone').parentElement.style.display = ntpEnabled ? '' : 'none';
             };
             ntpEl.addEventListener('change', (e) => {

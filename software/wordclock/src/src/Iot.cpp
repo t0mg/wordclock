@@ -12,7 +12,7 @@
 #define INITIAL_WIFI_AP_PASSWORD "12345678"
 // IoT configuration version. Change this whenever IotWebConf object's
 // configuration structure changes.
-#define CONFIG_VERSION "1"
+#define CONFIG_VERSION "3"
 // Port used by the IotWebConf HTTP server.
 #define WEB_SERVER_PORT 80
 // Default timezone index from Timezones.h (Paris).
@@ -39,7 +39,7 @@ namespace
   const char CUSTOMHTML_SCRIPT_INNER[] PROGMEM ="document.addEventListener(\"DOMContentLoaded\",function(f){document.querySelectorAll(\"[data-type]\").forEach(function(a){a.type=a.getAttribute(\"data-type\")});document.querySelectorAll(\"input[type=password]\").forEach(function(a){var b=document.createElement(\"input\");b.classList.add(\"pwtoggle\");b.type=\"button\";b.value=\"\\ud83d\\udc41\\ufe0f\";a.insertAdjacentElement(\"afterend\",b);b.onclick=function(){\"password\"===a.type?(a.type=\"text\",b.value=\"\\ud83d\\udd12\"):(a.type=\"password\",b.value=\"\\ud83d\\udc41\\ufe0f\")}});\
 (f=document.querySelector(\"form\"))&&f.addEventListener(\"submit\",function(){var a=document.querySelector(\"button[type=submit]\");a.innerText=\"Saving...\";a.toggleAttribute(\"disabled\",!0)});document.querySelectorAll(\"input[data-options]\").forEach(function(a){var b=a.value,h=a.getAttribute(\"data-options\").split(\"|\"),e=document.createElement(\"select\");e.name=a.name;e.id=a.id;\"\"===b&&e.appendChild(document.createElement(\"option\"));var c=null;h.forEach(function(m,n){var d=m.split(\"/\"),g=m;1<d.length?(g=d.splice(0,\
 1)[0],c&&g==c.label||(c&&e.appendChild(c),c=document.createElement(\"optgroup\"),c.label=g),g=d.join(\" / \")):c&&(e.appendChild(c),c=null);d=document.createElement(\"option\");d.value=n;d.innerText=g;n==b&&d.toggleAttribute(\"selected\");c?c.appendChild(d):e.appendChild(d)});c&&e.appendChild(c);a.id+=\"-d\";a.insertAdjacentElement(\"beforebegin\",e);a.parentElement.removeChild(a)});document.querySelectorAll(\"input[type=range]\").forEach(function(a){var b=a.getAttribute(\"data-labels\"),h=b&&b.split(\"|\");b=function(){a.setAttribute(\"data-label\",\
-h?h[parseInt(a.value,10)]||a.value:a.value)};a.oninput=b;b()});var k=document.getElementById(\"ntp_enabled\");if(k){var p=function(a){document.querySelectorAll(\"#date, #time\").forEach(function(b){b.parentElement.style.display=a?\"none\":\"\"});document.getElementById(\"timezone\").parentElement.style.display=a?\"\":\"none\"};k.addEventListener(\"change\",function(a){p(1==k.value)});p(1==k.value)}var l=document.querySelector(\"input[type=color]\");l&&(f=function(){document.querySelector(\".logoContainer\").style.backgroundColor=\
+h?h[parseInt(a.value,10)]||a.value:a.value)};a.oninput=b;b()});var k=document.getElementById(\"ntp_enabled\");if(k){var p=function(a){document.getElementById(\"time\").parentElement.style.display=a?\"none\":\"\";document.getElementById(\"timezone\").parentElement.style.display=a?\"\":\"none\"};k.addEventListener(\"change\",function(a){p(1==k.value)});p(1==k.value)}var l=document.querySelector(\"input[type=color]\");l&&(f=function(){document.querySelector(\".logoContainer\").style.backgroundColor=\
 l.value},l.addEventListener(\"input\",f),f())});";
 
   // Custom style added to the style tag.
@@ -214,34 +214,6 @@ body > div > div:last-child {\
     return static_cast<bool>(parseNumberValue(str, 0, 1, 0));
   }
 
-  // Attempts to parse `str` as a date in yyyy-mm-dd format. If it succeeds,
-  // returns true and populates `year`, `month` and `day` with the corresponding
-  // date values. If it fails, returns false and leaves other parameters unchanged.
-  bool parseDateValue(const char *str, uint16_t *year, uint8_t *month,
-                      uint8_t *day)
-  {
-    unsigned int parsed_year;
-    unsigned int parsed_month;
-    unsigned int parsed_day;
-
-    int result = sscanf(str, "%u-%u-%u", &parsed_year, &parsed_month,
-                        &parsed_day);
-    if (result != 3 || parsed_year < 2000 || parsed_year > 9999 ||
-        parsed_month == 0 || parsed_month > 12 || parsed_day == 0 ||
-        parsed_day > 31)
-    {
-      Serial.print("[INFO] Could not parse date value \"");
-      Serial.print(str);
-      Serial.println("\".");
-      return false;
-    }
-
-    *year = parsed_year;
-    *month = parsed_month;
-    *day = parsed_day;
-    return true;
-  }
-
   // Attempts to parse `str` as a time in hh:mm:ss format. If it succeeds, returns
   // true and populates `hour`, `minute` and `second` with the corresponding time
   // values. If it fails, returns false and leaves other parameters unchanged.
@@ -284,14 +256,15 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
       ldr_sensitivity_param_(
           "Light sensor sensitivity", "ldr_sensitivity", ldr_sensitivity_value_,
           IOT_CONFIG_VALUE_LENGTH, "5", 0, 10, 1, "data-labels='Off'"),
+      boot_animation_param_(
+          "Startup animation", "boot_animation_enabled", boot_animation_enabled_value_,
+          IOT_CONFIG_VALUE_LENGTH, "1", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
       ntp_enabled_param_(
           "Use network time (requires WiFi)", "ntp_enabled", ntp_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
       timezone_param_(
           "Time zone", "timezone", timezone_value_, IOT_CONFIG_VALUE_LENGTH,
           DEFAULT_TIMEZONE, DEFAULT_TIMEZONE, locationOptions),
-      manual_date_param_("Date", "date", manual_date_value_, IOT_CONFIG_VALUE_LENGTH,
-                  "yyyy-mm-dd", nullptr, "data-type='date' pattern='\\d{4}-\\d{1,2}-\\d{1,2}'"),
       manual_time_param_("Time", "time", manual_time_value_, IOT_CONFIG_VALUE_LENGTH,
                          "hh:mm:ss", nullptr, "data-type='time' pattern='\\d{1,2}:\\d{1,2}:\\d{1,2}' step='1'"),
       time_group_("time_group", "Time"),
@@ -310,7 +283,6 @@ Iot::~Iot() {}
 
 void Iot::clearTransientParams_()
 {
-  manual_date_value_[0] = '\0';
   manual_time_value_[0] = '\0';
 }
 
@@ -354,6 +326,7 @@ void Iot::setup()
     [this](const char* updatePath) { http_updater_.setup(&web_server_, updatePath); },
     [this](const char* userName, char* password) { http_updater_.updateCredentials(userName, password); });
 
+  display_group_.addItem(&boot_animation_param_);
   display_group_.addItem(&show_ampm_param_);
   display_group_.addItem(&ldr_sensitivity_param_);
   display_group_.addItem(&color_param_);
@@ -361,7 +334,6 @@ void Iot::setup()
 
   time_group_.addItem(&ntp_enabled_param_);
   time_group_.addItem(&timezone_param_);
-  // time_group_.addItem(&manual_date_param_);
   time_group_.addItem(&manual_time_param_);
   iot_web_conf_.addParameterGroup(&time_group_);
 
@@ -381,7 +353,9 @@ void Iot::setup()
 
   clearTransientParams_();
   updateClockFromParams_();
-
+  if (parseBooleanValue(boot_animation_enabled_value_)) {
+    display_->runBootAnimation();
+  }
   web_server_.on("/", [this]
                  { handleHttpToRoot_(); });
   web_server_.onNotFound([this]
