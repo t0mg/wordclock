@@ -486,18 +486,21 @@ void Iot::setRTCfromConfig_()
     uint8_t second = 0;
     if (manual_time_value_[0] != 0 &&
         parseTimeValue(manual_time_value_, &hour, &minute, &second)) {
-      struct tm timeinfo;
-      if (getLocalTime(&timeinfo))
+      struct tm timeinfo = {0, };
+      if (!getLocalTime(&timeinfo))
       {
-        timeinfo.tm_hour = hour;
-        timeinfo.tm_min = minute;
-        timeinfo.tm_sec = second;
-        time_t t = mktime(&timeinfo);
-        struct timeval tv;
-        tv.tv_usec = 0;
-        tv.tv_sec = t;
-        settimeofday(&tv, NULL);
+        DLOG("Local time invalid. set some 'usable' data");
+        timeinfo.tm_year = (2016 - 1900)+1;
+        timeinfo.tm_mon = 1;
       }
+      timeinfo.tm_hour = hour;
+      timeinfo.tm_min = minute;
+      timeinfo.tm_sec = second;
+      time_t t = mktime(&timeinfo);
+      struct timeval tv;
+      tv.tv_usec = 0;
+      tv.tv_sec = t;
+      settimeofday(&tv, NULL);
     }
   }
 }
