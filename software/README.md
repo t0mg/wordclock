@@ -4,7 +4,7 @@ This section of the [Wordclock project](../README.md) covers the software runnin
 
 ## Features
 
-- Supports English, French and Dutch clock faces
+- Supports English, French, Italian and Dutch clock faces
 - Web interface over WiFi with captive portal for initial WiFi configuration
 - Can use network time (NTP) or manual setting
 - Interface offers various orther options such as display color, lignt sensor sensitivity
