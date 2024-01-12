@@ -16,7 +16,7 @@
 #include <RTClib.h>
 #include "src/logging.h"
 #include "src/Display.h"
-#include "src/Clockface.h"
+#include "src/ClockFace.h"
 #include "src/Iot.h"
 #include "src/nodo.h" // Nodo stuff
 RTC_DS3231 rtc;
