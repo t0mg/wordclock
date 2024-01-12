@@ -24,8 +24,6 @@
 #define HTTP_OK 200
 // NTP server.
 #define NTP_SERVER "pool.ntp.org"
-// When NTP is enabled, define how often to update the RTC.
-#define NTP_POLL_DELAY_SECONDS 86400 // Once a day is plenty enough.
 
 namespace
 {
@@ -264,6 +262,9 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
       boot_animation_param_(
           "Startup animation", "boot_animation_enabled", boot_animation_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "1", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
+      ntp_interval_param_(
+          "Interval for ntp  synchronization (requires WiFi)", "ntp_interval", ntp_interval_value_,
+          IOT_CONFIG_VALUE_LENGTH, "24", 1, 24,1, "data-labels='1'"),
       ntp_enabled_param_(
           "Use network time (requires WiFi)", "ntp_enabled", ntp_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
@@ -281,6 +282,7 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
   this->ldr_sensitivity_value_[0] = '\0';
   this->color_value_[0] = '\0';
   this->ntp_enabled_value_[0] = '\0';
+  this->ntp_interval_value_[0] = '\0';
   this->timezone_value_[0] = '\0';
 }
 
@@ -328,6 +330,7 @@ void Iot::updateClockFromParams_()
   display_->setShowAmPm(parseBooleanValue(show_ampm_value_));
   display_->setSensorSentivity(parseNumberValue(ldr_sensitivity_value_, 0, 10, 5));
 
+  this->ntp_poll_interval_ = parseNumberValue(ntp_enabled_value_, 1,24,24);
   if (parseBooleanValue(ntp_enabled_value_))
   {
     ntp_poll_timer_.start();
@@ -346,12 +349,13 @@ void Iot::setup()
 
   ntp_poll_timer_.setup([this]()
                         { maybeSetRTCfromNTP_(); },
-                        NTP_POLL_DELAY_SECONDS);
+                        ntp_poll_interval_*60*60);
 
   this->show_ampm_value_[0] = '\0';
   this->ldr_sensitivity_value_[0] = '\0';
   this->color_value_[0] = '\0';
   this->ntp_enabled_value_[0] = '\0';
+  this->ntp_interval_value_[0] = '\0';
   this->timezone_value_[0] = '\0';
 
   iot_web_conf_.setupUpdateServer(
@@ -366,6 +370,7 @@ void Iot::setup()
   iot_web_conf_.addParameterGroup(&display_group_);
 
   time_group_.addItem(&ntp_enabled_param_);
+  time_group_.addItem(&ntp_interval_param_);
   time_group_.addItem(&timezone_param_);
   time_group_.addItem(&manual_time_param_);
   iot_web_conf_.addParameterGroup(&time_group_);
