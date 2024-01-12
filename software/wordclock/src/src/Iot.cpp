@@ -263,7 +263,7 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
           "Startup animation", "boot_animation_enabled", boot_animation_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "1", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
       ntp_interval_param_(
-          "Interval for ntp  synchronization (requires WiFi)", "ntp_interval", ntp_interval_value_,
+          "Refresh interval in hours for ntp  synchronization (requires WiFi)", "ntp_interval", ntp_interval_value_,
           IOT_CONFIG_VALUE_LENGTH, "24", 1, 24,1, "data-labels='1'"),
       ntp_enabled_param_(
           "Use network time (requires WiFi)", "ntp_enabled", ntp_enabled_value_,
