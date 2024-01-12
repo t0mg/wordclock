@@ -36,7 +36,7 @@ ${posix}
 
 const char * const location[] PROGMEM = {${nameconsts.join(",")}};
 const char * const posix[] PROGMEM = {${posixconsts.join(",")}};
-const char locationOptions[] PROGMEM = "data-options='${readables.join("|")}'";
+const char locationOptions[] PROGMEM = "data-controlledby='ntp_enabled' data-showon='1' data-options='${readables.join("|")}'";
 
   `;
 
