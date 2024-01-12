@@ -28,6 +28,10 @@ public:
   void setup();
   void loop();
 
+  // accessor for rtc_found
+  bool get_rtc_found() { return rtc_found_; }
+  void set_rtc_found(bool b) { rtc_found_ = b; }
+
 private:
   // Clears the values of transient parameters.
   void clearTransientParams_();
@@ -60,6 +64,8 @@ private:
 
   // RTC.
   RTC_DS3231 *rtc_ = nullptr;
+  bool rtc_found_ = false;
+
 
   // NTP poll timer;
   int ntp_poll_interval_ = 24;
