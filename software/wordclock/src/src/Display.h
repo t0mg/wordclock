@@ -17,11 +17,12 @@
 class Display
 {
 public:
-  Display(ClockFace &clockFace, uint8_t pin = NEOPIXEL_PIN);
+  Display(ClockFace* clockFace, uint8_t pin = NEOPIXEL_PIN);
 
   void setup();
   void loop();
   void setColor(const RgbColor &color);
+  void setClockFace(ClockFace* clockface);
   void runBootAnimation();
 
   // Sets the sensor sentivity of the brightness controller.
@@ -40,7 +41,7 @@ private:
   // To know which pixels to turn on and off, one needs to know which letter
   // matches which LED, and the orientation of the display. This is the job
   // of the clockFace.
-  ClockFace &_clockFace;
+  ClockFace* _clockFace;
 
   // Whether the display should show AM/PM information.
   bool _show_ampm = 0;

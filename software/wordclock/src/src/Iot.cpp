@@ -2,6 +2,7 @@
 #include "Iot.h"
 #include <IotWebConfESP32HTTPUpdateServer.h>
 #include "Timezones.h"
+#include "clockfaces.h"
 
 #include <NeoPixelBus.h>
 #include <WiFi.h>
@@ -12,11 +13,13 @@
 #define INITIAL_WIFI_AP_PASSWORD "12345678"
 // IoT configuration version. Change this whenever IotWebConf object's
 // configuration structure changes.
-#define CONFIG_VERSION "3"
+#define CONFIG_VERSION "4"
 // Port used by the IotWebConf HTTP server.
 #define WEB_SERVER_PORT 80
 // Default timezone index from Timezones.h (Paris).
 #define DEFAULT_TIMEZONE "385"
+// Default language (EN)
+#define DEFAULT_CLOCKFACE_LANGUAGE "0"
 // HTTP OK status code.
 #define HTTP_OK 200
 // NTP server.
@@ -26,7 +29,6 @@
 
 namespace
 {
-
   // An SVG logo for the Word Clock
   const char LOGO_DATA_URI[] PROGMEM = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 480'%3E%3Cpath d='M0 0h480v480H0z'/%3E%3Cg fill='%23fff'%3E%3Cpath d='M150.692 163.411h-6.563l-11.522-38.242q-.82-2.54-1.836-6.406-1.016-3.867-1.055-4.649-.86 5.157-2.735 11.29L115.81 163.41h-6.563l-15.195-57.109h7.031l9.024 35.273q1.875 7.422 2.734 13.438 1.055-7.148 3.125-13.984l10.234-34.727h7.031l10.742 35.04q1.875 6.054 3.164 13.671.742-5.547 2.813-13.516l8.984-35.195h7.031z' aria-label='W'/%3E%3Cpath d='M268.677 134.718q0 13.711-6.954 21.562-6.914 7.852-19.258 7.852-12.617 0-19.492-7.695-6.835-7.735-6.835-21.797 0-13.945 6.875-21.602 6.875-7.696 19.53-7.696 12.306 0 19.22 7.813t6.914 21.562zm-45.508 0q0 11.602 4.921 17.617 4.961 5.977 14.375 5.977 9.493 0 14.336-5.977t4.844-17.617q0-11.523-4.844-17.46-4.804-5.977-14.258-5.977-9.492 0-14.453 6.015-4.922 5.977-4.922 17.422z' aria-label='O'/%3E%3Cpath d='M154.135 244.514q0 14.14-7.696 21.64-7.656 7.462-22.07 7.462h-15.82v-57.11h17.5q13.32 0 20.703 7.383t7.383 20.625zm-7.032.234q0-11.172-5.625-16.836-5.586-5.664-16.64-5.664h-9.65v45.625h8.087q11.875 0 17.852-5.82 5.976-5.86 5.976-17.305z' aria-label='D'/%3E%3Cpath d='M339.34 139.658v23.75h-6.641v-57.109h15.664q10.508 0 15.508 4.023 5.039 4.024 5.039 12.11 0 11.327-11.484 15.311l15.508 25.664h-7.852l-13.828-23.75zm0-5.703h9.101q7.031 0 10.312-2.773 3.281-2.813 3.281-8.399 0-5.664-3.36-8.164-3.32-2.5-10.702-2.5h-8.633z' aria-label='R'/%3E%3Cpath d='M245.577 219.873q-9.414 0-14.883 6.289-5.43 6.25-5.43 17.148 0 11.211 5.235 17.344 5.273 6.094 15 6.094 5.976 0 13.633-2.149v5.82q-5.938 2.227-14.648 2.227-12.617 0-19.492-7.656-6.836-7.656-6.836-21.758 0-8.828 3.281-15.469 3.32-6.64 9.531-10.234 6.25-3.594 14.688-3.594 8.985 0 15.703 3.282l-2.812 5.703q-6.485-3.047-12.97-3.047z' aria-label='C'/%3E%3Cpath d='M156.44 354.9q0 13.711-6.953 21.562-6.914 7.852-19.258 7.852-12.617 0-19.492-7.696-6.836-7.734-6.836-21.797 0-13.945 6.875-21.602 6.875-7.695 19.531-7.695 12.305 0 19.219 7.813t6.914 21.562zm-45.508 0q0 11.602 4.922 17.617 4.96 5.977 14.375 5.977 9.492 0 14.336-5.977t4.844-17.617q0-11.523-4.844-17.461-4.805-5.977-14.258-5.977-9.492 0-14.453 6.016-4.922 5.977-4.922 17.422z' aria-label='O'/%3E%3Cpath d='M336.73 273.613v-57.109h6.641v51.094h25.195v6.016z' aria-label='L'/%3E%3Cpath d='M373.956 383.337h-7.813l-20.82-27.695-5.976 5.312v22.383h-6.64v-57.109h6.64v28.32l25.898-28.32h7.852l-22.97 24.805z' aria-label='K'/%3E%3Cpath d='M245.577 329.87q-9.414 0-14.883 6.29-5.43 6.25-5.43 17.147 0 11.211 5.235 17.344 5.273 6.094 15 6.094 5.976 0 13.633-2.148v5.82q-5.938 2.226-14.648 2.226-12.617 0-19.492-7.656-6.836-7.656-6.836-21.758 0-8.828 3.281-15.469 3.32-6.64 9.531-10.234 6.25-3.594 14.688-3.594 8.985 0 15.703 3.282l-2.812 5.703q-6.485-3.047-12.97-3.047z' aria-label='C'/%3E%3C/g%3E%3Cg fill='%23fff'%3E%3Ccircle cx='37.785' cy='37.968' r='7.906'/%3E%3Ccircle cx='439.98' cy='38.047' r='7.906'/%3E%3Ccircle cx='37.785' cy='440.74' r='7.906'/%3E%3Ccircle cx='439.98' cy='440.82' r='7.906'/%3E%3C/g%3E%3C/svg%3E";
 
@@ -256,6 +258,9 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
       ldr_sensitivity_param_(
           "Light sensor sensitivity", "ldr_sensitivity", ldr_sensitivity_value_,
           IOT_CONFIG_VALUE_LENGTH, "5", 0, 10, 1, "data-labels='Off'"),
+      clockface_language_param_(
+          "Clock face language", "clockface_language", clockface_language_value_, IOT_CONFIG_VALUE_LENGTH,
+          DEFAULT_CLOCKFACE_LANGUAGE, DEFAULT_CLOCKFACE_LANGUAGE, "data-options='English|Dutch|French|Italian'"),
       boot_animation_param_(
           "Startup animation", "boot_animation_enabled", boot_animation_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "1", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
@@ -291,6 +296,33 @@ void Iot::clearTransientParams_()
 // workaround of representing booleans as 0 or 1 integers.
 void Iot::updateClockFromParams_()
 {
+  switch(parseNumberValue(clockface_language_value_, 0, 10, 0)) {
+    case 1:
+    {
+      display_->setClockFace(&clockFaceNL);
+      DLOGLN("Language set to Dutch");
+      break;
+    }
+    case 2:
+    {
+      display_->setClockFace(&clockFaceFR);
+      DLOGLN("Language set to French");
+      break;
+    }
+    case 3:
+    {
+      display_->setClockFace(&clockFaceIT);
+      DLOGLN("Language set to Italian");
+      break;
+    }
+    default:
+    {
+      display_->setClockFace(&clockFaceEN);
+      DLOGLN("Language set to English");
+      break;
+    }
+  }
+
   display_->setColor(
       parseColorValue(color_value_, RgbColor(255, 255, 255)));
   display_->setShowAmPm(parseBooleanValue(show_ampm_value_));
@@ -327,6 +359,7 @@ void Iot::setup()
     [this](const char* userName, char* password) { http_updater_.updateCredentials(userName, password); });
 
   display_group_.addItem(&boot_animation_param_);
+  display_group_.addItem(&clockface_language_param_);
   display_group_.addItem(&show_ampm_param_);
   display_group_.addItem(&ldr_sensitivity_param_);
   display_group_.addItem(&color_param_);

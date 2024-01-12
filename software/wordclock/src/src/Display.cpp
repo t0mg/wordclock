@@ -3,7 +3,7 @@
 #include "Display.h"
 #include "ClockFace.h"
 
-Display::Display(ClockFace &clockFace, uint8_t pin)
+Display::Display(ClockFace* clockFace, uint8_t pin)
     : _clockFace(clockFace),
       _pixels(ClockFace::pixelCount(), pin),
       _animations(ClockFace::pixelCount(), NEO_CENTISECONDS),
@@ -30,6 +30,18 @@ void Display::loop()
   _pixels.Show();
 }
 
+void Display::setClockFace(ClockFace* clockface)
+{
+  DLOGLN("Updating clockface");
+  // if (clockface == _clockFace) {
+  //     DLOGLN("cancel: refs are the same");
+  //     return;
+  // }
+  // _clockFace.~ClockFace();
+  _clockFace = clockface;
+  _update();
+}
+
 void Display::setColor(const RgbColor &color)
 {
   DLOGLN("Updating color");
@@ -47,7 +59,7 @@ void Display::_update(int animationSpeed)
 
   // For all the LED animate a change from the current visible state to the new
   // one.
-  const std::vector<bool> &state = _clockFace.getState();
+  const std::vector<bool> &state = _clockFace->getState();
   for (int index = 0; index < state.size(); index++)
   {
     RgbColor originalColor = _pixels.GetPixelColor(index);
@@ -66,7 +78,7 @@ void Display::_update(int animationSpeed)
 void Display::updateForTime(int hour, int minute, int second, int animationSpeed)
 {
 
-  if (_bootAnimations.IsAnimating() || !_clockFace.stateForTime(hour, minute, second, _show_ampm))
+  if (_bootAnimations.IsAnimating() || !_clockFace->stateForTime(hour, minute, second, _show_ampm))
   {
     return; // Nothing to update.
   }
@@ -87,7 +99,7 @@ void Display::_circle(uint16_t x, uint16_t y, int radius, RgbColor color)
       double distance = _distance(i, j, x, y);
       if (distance < radius && distance > radius - 2)
       {
-        _pixels.SetPixelColor(_clockFace.map(i, j), color);
+        _pixels.SetPixelColor(_clockFace->map(i, j), color);
       }
     }
   }
@@ -95,9 +107,9 @@ void Display::_circle(uint16_t x, uint16_t y, int radius, RgbColor color)
 
 void Display::_colorCornerPixels(RgbColor color)
 {
-  for (int corner = _clockFace.TopLeft; corner <= _clockFace.TopRight; corner++)
+  for (int corner = _clockFace->TopLeft; corner <= _clockFace->TopRight; corner++)
   {
-    _pixels.SetPixelColor(_clockFace.mapMinute(static_cast<ClockFace::Corners>(corner)), color);
+    _pixels.SetPixelColor(_clockFace->mapMinute(static_cast<ClockFace::Corners>(corner)), color);
   }
 }
 

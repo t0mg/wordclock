@@ -16,22 +16,20 @@
 #include <RTClib.h>
 #include "src/logging.h"
 #include "src/Display.h"
-#include "src/ClockFace.h"
+#include "src/Clockface.h"
 #include "src/Iot.h"
 #include "src/nodo.h" // Nodo stuff
 RTC_DS3231 rtc;
 
+// TODO: refactor so we don't need to initialize another clockface here.
 #ifdef NODO
-EnglishClockFace clockFace(ClockFace::LightSensorPosition::Top);
-// FrenchClockFace clockFace(ClockFace::LightSensorPosition::Top);
-// DutchClockFace clockFace(ClockFace::LightSensorPosition::Top);
+auto pos = ClockFace::LightSensorPosition::Top;
 #else
-EnglishClockFace clockFace(ClockFace::LightSensorPosition::Bottom);
-// FrenchClockFace clockFace(ClockFace::LightSensorPosition::Bottom);
-// DutchClockFace clockFace(ClockFace::LightSensorPosition::Bottom);
+auto pos = ClockFace::LightSensorPosition::Bottom;
 #endif
 
-Display display(clockFace);
+EnglishClockFace clockFace(pos);
+Display display(&clockFace);
 
 Iot iot(&display, &rtc);
 
@@ -50,6 +48,7 @@ void setup()
   {
     DCHECK("RTC lost power. Battery was removed ?");
   }
+
   display.setup();
   iot.setup();
 }

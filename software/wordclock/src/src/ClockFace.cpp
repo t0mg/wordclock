@@ -187,7 +187,7 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second, bool show_a
   _hour = hour;
   _minute = minute;
 
-  DLOGLN("update state");
+  DLOGLN("update state fr");
 
   clearDisplay();
 

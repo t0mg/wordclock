@@ -3,6 +3,7 @@
 
 #include "Display.h"
 #include "Timer.h"
+#include "ClockFace.h"
 #include "IotRangeValueParameter.h"
 
 #include <IotWebConf.h>
@@ -92,6 +93,11 @@ private:
   iotwebconf::TextParameter color_param_;
   // Value of the color parameter.
   char color_value_[IOT_CONFIG_VALUE_LENGTH];
+
+  // Clockface language selctor.
+  iotwebconf::NumberParameter clockface_language_param_;
+  // Value of the LDR sensitivity parameter.
+  char clockface_language_value_[IOT_CONFIG_VALUE_LENGTH];
 
   // Enables the boot animation.
   IotRangeValueParameter boot_animation_param_;
