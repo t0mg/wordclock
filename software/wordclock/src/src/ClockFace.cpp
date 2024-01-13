@@ -985,7 +985,8 @@ bool RingClockFace::stateForTime(int hour, int minute, int second, bool show_amp
 
   DLOGLN("update state");
   clearDisplay();
-  updateSegment(hour,0,1);
+  int h = (hour%12)*2+((minute >= 30)?1:0);
+  updateSegment(h,0,1);
   updateSegment(24+minute,0,1);
 
 
