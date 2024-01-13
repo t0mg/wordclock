@@ -11,4 +11,9 @@
 #define LDR_PIN 1
 #define NEOPIXEL_PIN 0
 #endif
+#else
+#ifdef RING
+#define NEOPIXEL_PIN 1
+#define LDR_PIN 2
+#endif // RING
 #endif

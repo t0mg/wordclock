@@ -1,3 +1,6 @@
+extern "C" {
+#include <esp32-hal-time.c>
+}
 #include "logging.h"
 #include "Iot.h"
 #include <IotWebConfESP32HTTPUpdateServer.h>
@@ -262,13 +265,13 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
           IOT_CONFIG_VALUE_LENGTH, "5", 0, 10, 1, "data-labels='Off'"),
       clockface_language_param_(
           "Clock face language", "clockface_language", clockface_language_value_, IOT_CONFIG_VALUE_LENGTH,
-          DEFAULT_CLOCKFACE_LANGUAGE, DEFAULT_CLOCKFACE_LANGUAGE, "data-options='English|Dutch|French|Italian'"),
+          DEFAULT_CLOCKFACE_LANGUAGE, DEFAULT_CLOCKFACE_LANGUAGE, "data-options='English|Dutch|French|Italian|Ring'"),
       boot_animation_param_(
           "Startup animation", "boot_animation_enabled", boot_animation_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "1", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
       ntp_interval_param_(
           "Refresh interval in hours for ntp  synchronization (requires WiFi)", "ntp_interval", ntp_interval_value_,
-          IOT_CONFIG_VALUE_LENGTH, "24", 1, 24,1, "data-labels='1'"),
+          IOT_CONFIG_VALUE_LENGTH, "24", 1, 24,1, "data-controlledby='ntp_enabled' data-showon='1'"),
       ntp_enabled_param_(
           "Use network time (requires WiFi)", "ntp_enabled", ntp_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
@@ -319,6 +322,12 @@ void Iot::updateClockFromParams_()
     {
       display_->setClockFace(&clockFaceIT);
       DLOGLN("Language set to Italian");
+      break;
+    }
+    case 4:
+    {
+      display_->setClockFace(&clockFaceRING);
+      DLOGLN("Language set to Ring");
       break;
     }
     default:
@@ -431,6 +440,9 @@ void Iot::maybeSetRTCfromNTP_()
   }
 
   int tz = parseNumberValue(timezone_value_, 0, 459, 0);
+#if SNTP_GET_SERVERS_FROM_DHCP || SNTP_GET_SERVERS_FROM_DHCPV6
+  sntp_servermode_dhcp(1); 
+#endif
   configTzTime(posix[tz], NTP_SERVER);
 
   struct tm timeinfo;

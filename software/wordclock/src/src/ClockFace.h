@@ -29,7 +29,7 @@ public:
   const std::vector<bool> &getState() { return _state; };
 
   // Returns the index of the LED in the strip given a position on the grid.
-  uint16_t map(int16_t x, int16_t y);
+  virtual uint16_t map(int16_t x, int16_t y);
 
   // The first four LED are the corner ones, counting minutes. They are assumed
   // to be wired in clockwise order, starting from the light sensor position.
@@ -92,4 +92,14 @@ public:
   ItalianClockFace(LightSensorPosition position) : ClockFace(position){};
 
   virtual bool stateForTime(int hour, int minute, int second, bool show_ampm);
+};
+
+
+class RingClockFace : public ClockFace
+{
+public:
+  RingClockFace(LightSensorPosition position) : ClockFace(position){};
+
+  virtual bool stateForTime(int hour, int minute, int second, bool show_ampm);
+  virtual uint16_t map(int16_t x, int16_t y) {return x;}
 };
