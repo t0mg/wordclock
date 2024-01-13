@@ -1,7 +1,7 @@
 #pragma once
 
 // Define debug to turn on debug logging.
-#define DEBUG 1
+// #define DEBUG 1
 
 // DLOG and DLOGLN are equivalent of Serial.print and println, but turned off by
 // the DEBUG macro absence.

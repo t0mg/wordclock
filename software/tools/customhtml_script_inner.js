@@ -10,6 +10,13 @@ document.addEventListener(
     'DOMContentLoaded',
     function (e) {
 
+        // Move network session at the bottom if SSID is set.
+        if(!!document.getElementById("iwcWifiSsid").value) {
+          const f = document.getElementById("iwcSys");
+          f.parentElement.removeChild(f);
+          document.querySelector('form').insertBefore(f, document.querySelector('button[type=submit]'));
+       }
+
         // Replace text inputs with desired type
         document.querySelectorAll("[data-type]").forEach((el) => {
           el.type = el.getAttribute("data-type");
@@ -85,11 +92,17 @@ document.addEventListener(
                 selectEl.appendChild(optgroupEl);
             }
             customSelect.id += '-d';
+            const ctrlAttr = customSelect.getAttribute('data-controlledby');
+            const ctrlVal = customSelect.getAttribute('data-showon');
+            if (ctrlAttr && ctrlVal) {
+              selectEl.setAttribute('data-controlledby', ctrlAttr);
+              selectEl.setAttribute('data-showon', ctrlVal);
+            }
             customSelect.insertAdjacentElement('beforebegin', selectEl);
             customSelect.parentElement.removeChild(customSelect);
         });
 
-        // Adds a label next to Range inputs
+        // Adds a label next to Range inputs.
         document.querySelectorAll("input[type=range]").forEach((inputEl) => {
             const labels = inputEl.getAttribute("data-labels");
             const labelList = labels && labels.split("|");
@@ -100,18 +113,16 @@ document.addEventListener(
             setLabel();
         });
 
-        // // Show/hide config fields based on NTP setting
-        const ntpEl = document.getElementById("ntp_enabled");
-        if (ntpEl) {
-            const toggleTimeFields = (ntpEnabled) => {
-                document.getElementById('time').parentElement.style.display = ntpEnabled ? 'none' : '';
-                document.getElementById('timezone').parentElement.style.display = ntpEnabled ? '' : 'none';
-            };
-            ntpEl.addEventListener('change', (e) => {
-                toggleTimeFields(ntpEl.value == 1);
-            });
-            toggleTimeFields(ntpEl.value == 1);
-        }
+        // Show/hide fields based on others.
+        document.querySelectorAll("[data-controlledby]").forEach((controlledEl) => {
+          const controllerEl = document.getElementById(controlledEl.getAttribute('data-controlledby'));
+          const showValues = controlledEl.getAttribute('data-showon').split('|');
+          const apply = () => {
+            controlledEl.parentElement.style.display = showValues.indexOf(controllerEl.value + "") < 0 ? 'none' : '';
+          };
+          controllerEl.addEventListener('change', apply);
+          apply();
+        });
 
         // Apply the selected color to the clock logo :)
         const colorInputEl = document.querySelector('input[type=color]');

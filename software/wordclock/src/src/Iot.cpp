@@ -36,11 +36,11 @@ namespace
 
   // Custom Javascript block that will be added to the header.
   // See customconfig.js for human-readable version.
-  const char CUSTOMHTML_SCRIPT_INNER[] PROGMEM ="document.addEventListener(\"DOMContentLoaded\",function(f){document.querySelectorAll(\"[data-type]\").forEach(function(a){a.type=a.getAttribute(\"data-type\")});document.querySelectorAll(\"input[type=password]\").forEach(function(a){var b=document.createElement(\"input\");b.classList.add(\"pwtoggle\");b.type=\"button\";b.value=\"\\ud83d\\udc41\\ufe0f\";a.insertAdjacentElement(\"afterend\",b);b.onclick=function(){\"password\"===a.type?(a.type=\"text\",b.value=\"\\ud83d\\udd12\"):(a.type=\"password\",b.value=\"\\ud83d\\udc41\\ufe0f\")}});\
-(f=document.querySelector(\"form\"))&&f.addEventListener(\"submit\",function(){var a=document.querySelector(\"button[type=submit]\");a.innerText=\"Saving...\";a.toggleAttribute(\"disabled\",!0)});document.querySelectorAll(\"input[data-options]\").forEach(function(a){var b=a.value,h=a.getAttribute(\"data-options\").split(\"|\"),e=document.createElement(\"select\");e.name=a.name;e.id=a.id;\"\"===b&&e.appendChild(document.createElement(\"option\"));var c=null;h.forEach(function(m,n){var d=m.split(\"/\"),g=m;1<d.length?(g=d.splice(0,\
-1)[0],c&&g==c.label||(c&&e.appendChild(c),c=document.createElement(\"optgroup\"),c.label=g),g=d.join(\" / \")):c&&(e.appendChild(c),c=null);d=document.createElement(\"option\");d.value=n;d.innerText=g;n==b&&d.toggleAttribute(\"selected\");c?c.appendChild(d):e.appendChild(d)});c&&e.appendChild(c);a.id+=\"-d\";a.insertAdjacentElement(\"beforebegin\",e);a.parentElement.removeChild(a)});document.querySelectorAll(\"input[type=range]\").forEach(function(a){var b=a.getAttribute(\"data-labels\"),h=b&&b.split(\"|\");b=function(){a.setAttribute(\"data-label\",\
-h?h[parseInt(a.value,10)]||a.value:a.value)};a.oninput=b;b()});var k=document.getElementById(\"ntp_enabled\");if(k){var p=function(a){document.getElementById(\"time\").parentElement.style.display=a?\"none\":\"\";document.getElementById(\"timezone\").parentElement.style.display=a?\"\":\"none\"};k.addEventListener(\"change\",function(a){p(1==k.value)});p(1==k.value)}var l=document.querySelector(\"input[type=color]\");l&&(f=function(){document.querySelector(\".logoContainer\").style.backgroundColor=\
-l.value},l.addEventListener(\"input\",f),f())});";
+  const char CUSTOMHTML_SCRIPT_INNER[] PROGMEM = "document.addEventListener(\"DOMContentLoaded\",function(e){document.getElementById(\"iwcWifiSsid\").value&&(e=document.getElementById(\"iwcSys\"),e.parentElement.removeChild(e),document.querySelector(\"form\").insertBefore(e,document.querySelector(\"button[type=submit]\")));document.querySelectorAll(\"[data-type]\").forEach(function(a){a.type=a.getAttribute(\"data-type\")});document.querySelectorAll(\"input[type=password]\").forEach(function(a){var b=document.createElement(\"input\");b.classList.add(\"pwtoggle\");b.type=\
+\"button\";b.value=\"\\ud83d\\udc41\\ufe0f\";a.insertAdjacentElement(\"afterend\",b);b.onclick=function(){\"password\"===a.type?(a.type=\"text\",b.value=\"\\ud83d\\udd12\"):(a.type=\"password\",b.value=\"\\ud83d\\udc41\\ufe0f\")}});(e=document.querySelector(\"form\"))&&e.addEventListener(\"submit\",function(){var a=document.querySelector(\"button[type=submit]\");a.innerText=\"Saving...\";a.toggleAttribute(\"disabled\",!0)});document.querySelectorAll(\"input[data-options]\").forEach(function(a){var b=a.value,f=a.getAttribute(\"data-options\").split(\"|\"),\
+c=document.createElement(\"select\");c.name=a.name;c.id=a.id;\"\"===b&&c.appendChild(document.createElement(\"option\"));var d=null;f.forEach(function(l,m){var g=l.split(\"/\"),h=l;1<g.length?(h=g.splice(0,1)[0],d&&h==d.label||(d&&c.appendChild(d),d=document.createElement(\"optgroup\"),d.label=h),h=g.join(\" / \")):d&&(c.appendChild(d),d=null);g=document.createElement(\"option\");g.value=m;g.innerText=h;m==b&&g.toggleAttribute(\"selected\");d?d.appendChild(g):c.appendChild(g)});d&&c.appendChild(d);a.id+=\"-d\";f=a.getAttribute(\"data-controlledby\");\
+var n=a.getAttribute(\"data-showon\");f&&n&&(c.setAttribute(\"data-controlledby\",f),c.setAttribute(\"data-showon\",n));a.insertAdjacentElement(\"beforebegin\",c);a.parentElement.removeChild(a)});document.querySelectorAll(\"input[type=range]\").forEach(function(a){var b=a.getAttribute(\"data-labels\"),f=b&&b.split(\"|\");b=function(){a.setAttribute(\"data-label\",f?f[parseInt(a.value,10)]||a.value:a.value)};a.oninput=b;b()});document.querySelectorAll(\"[data-controlledby]\").forEach(function(a){var b=document.getElementById(a.getAttribute(\"data-controlledby\")),\
+f=a.getAttribute(\"data-showon\").split(\"|\"),c=function(){a.parentElement.style.display=0>f.indexOf(b.value+\"\")?\"none\":\"\"};b.addEventListener(\"change\",c);c()});var k=document.querySelector(\"input[type=color]\");k&&(e=function(){document.querySelector(\".logoContainer\").style.backgroundColor=k.value},k.addEventListener(\"input\",e),e())});";
 
   // Custom style added to the style tag.
   const char CUSTOMHTML_STYLE_INNER[] PROGMEM = "\n\
@@ -256,7 +256,7 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
                    "style='border-width: 1px; padding: 1px;'"),
       show_ampm_param_(
           "AM/PM indicator", "show_ampm", show_ampm_value_,
-          IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
+          IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On' data-controlledby='clockface_language' data-showon='0'"),
       ldr_sensitivity_param_(
           "Light sensor sensitivity", "ldr_sensitivity", ldr_sensitivity_value_,
           IOT_CONFIG_VALUE_LENGTH, "5", 0, 10, 1, "data-labels='Off'"),
@@ -276,7 +276,7 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
           "Time zone", "timezone", timezone_value_, IOT_CONFIG_VALUE_LENGTH,
           DEFAULT_TIMEZONE, DEFAULT_TIMEZONE, locationOptions),
       manual_time_param_("Time", "time", manual_time_value_, IOT_CONFIG_VALUE_LENGTH,
-                         "hh:mm:ss", nullptr, "data-type='time' pattern='\\d{1,2}:\\d{1,2}:\\d{1,2}' step='1'"),
+                         "hh:mm:ss", nullptr, "data-type='time' pattern='\\d{1,2}:\\d{1,2}:\\d{1,2}' step='1' data-controlledby='ntp_enabled' data-showon='0'"),
       time_group_("time_group", "Time"),
       display_group_("display_group", "Display"),
       iot_web_conf_(THING_NAME, &dns_server_, &web_server_,
