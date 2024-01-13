@@ -50,7 +50,7 @@ private:
   RgbColor _color;
 
   // Addressable bus to control the LEDs.
-  NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> _pixels;
+  NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0Ws2812xMethod> _pixels;
 
   // Reacts to change in ambient light to adapt the power of the LEDs
   BrightnessController _brightnessController;
