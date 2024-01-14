@@ -968,3 +968,26 @@ case 0:
   }
   return true;
 }
+
+
+
+
+
+bool RingClockFace::stateForTime(int hour, int minute, int second, bool show_ampm)
+{
+  if (hour == _hour && minute == _minute)
+  {
+    return false;
+  }
+  _hour = hour;
+  _minute = minute;
+
+  DLOGLN("update state");
+  clearDisplay();
+  int h = (hour%12)*2+((minute >= 30)?1:0);
+  updateSegment(h,0,1);
+  updateSegment(24+minute,0,1);
+
+
+  return true;
+}

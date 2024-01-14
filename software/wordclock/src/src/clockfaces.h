@@ -10,3 +10,4 @@ EnglishClockFace clockFaceEN(position);
 FrenchClockFace clockFaceFR(position);
 DutchClockFace clockFaceNL(position);
 ItalianClockFace clockFaceIT(position);
+RingClockFace clockFaceRING(position);

@@ -28,6 +28,10 @@ public:
   void setup();
   void loop();
 
+  // accessor for rtc_found
+  bool get_rtc_found() { return rtc_found_; }
+  void set_rtc_found(bool b) { rtc_found_ = b; }
+
 private:
   // Clears the values of transient parameters.
   void clearTransientParams_();
@@ -60,8 +64,11 @@ private:
 
   // RTC.
   RTC_DS3231 *rtc_ = nullptr;
+  bool rtc_found_ = false;
+
 
   // NTP poll timer;
+  int ntp_poll_interval_ = 24;
   Timer ntp_poll_timer_;
 
   // Enables NTP time setting.
@@ -103,6 +110,12 @@ private:
   IotRangeValueParameter boot_animation_param_;
   // Value of the boot animation setting option.
   char boot_animation_enabled_value_[IOT_CONFIG_VALUE_LENGTH];
+
+
+  // Enables the ntp interval.
+  IotRangeValueParameter ntp_interval_param_;
+  // Value of the ntp interval setting option.
+  char ntp_interval_value_[IOT_CONFIG_VALUE_LENGTH];
 
   // Config form groups.
   iotwebconf::ParameterGroup time_group_;

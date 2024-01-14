@@ -1,3 +1,6 @@
+extern "C" {
+#include <esp32-hal-time.c>
+}
 #include "logging.h"
 #include "Iot.h"
 #include <IotWebConfESP32HTTPUpdateServer.h>
@@ -24,8 +27,6 @@
 #define HTTP_OK 200
 // NTP server.
 #define NTP_SERVER "pool.ntp.org"
-// When NTP is enabled, define how often to update the RTC.
-#define NTP_POLL_DELAY_SECONDS 86400 // Once a day is plenty enough.
 
 namespace
 {
@@ -203,7 +204,11 @@ body > div > div:last-child {\
     {
       DLOG("[INFO] Could not parse number value \"");
       DLOG(str);
-      DLOGLN("\".");
+      DLOG("\" ");
+      DLOG(min_value);
+      DLOG(" <, >");
+      DLOG(max_value);
+      DLOGLN(".");
       return default_value;
     }
     return parsed_value;
@@ -260,10 +265,13 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
           IOT_CONFIG_VALUE_LENGTH, "5", 0, 10, 1, "data-labels='Off'"),
       clockface_language_param_(
           "Clock face language", "clockface_language", clockface_language_value_, IOT_CONFIG_VALUE_LENGTH,
-          DEFAULT_CLOCKFACE_LANGUAGE, DEFAULT_CLOCKFACE_LANGUAGE, "data-options='English|Dutch|French|Italian'"),
+          DEFAULT_CLOCKFACE_LANGUAGE, DEFAULT_CLOCKFACE_LANGUAGE, "data-options='English|Dutch|French|Italian|Ring'"),
       boot_animation_param_(
           "Startup animation", "boot_animation_enabled", boot_animation_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "1", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
+      ntp_interval_param_(
+          "Refresh interval in hours for ntp  synchronization (requires WiFi)", "ntp_interval", ntp_interval_value_,
+          IOT_CONFIG_VALUE_LENGTH, "24", 1, 24,1, "data-controlledby='ntp_enabled' data-showon='1'"),
       ntp_enabled_param_(
           "Use network time (requires WiFi)", "ntp_enabled", ntp_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
@@ -281,6 +289,7 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
   this->ldr_sensitivity_value_[0] = '\0';
   this->color_value_[0] = '\0';
   this->ntp_enabled_value_[0] = '\0';
+  this->ntp_interval_value_[0] = '\0';
   this->timezone_value_[0] = '\0';
 }
 
@@ -315,6 +324,12 @@ void Iot::updateClockFromParams_()
       DLOGLN("Language set to Italian");
       break;
     }
+    case 4:
+    {
+      display_->setClockFace(&clockFaceRING);
+      DLOGLN("Language set to Ring");
+      break;
+    }
     default:
     {
       display_->setClockFace(&clockFaceEN);
@@ -328,6 +343,7 @@ void Iot::updateClockFromParams_()
   display_->setShowAmPm(parseBooleanValue(show_ampm_value_));
   display_->setSensorSentivity(parseNumberValue(ldr_sensitivity_value_, 0, 10, 5));
 
+  this->ntp_poll_interval_ = parseNumberValue(ntp_enabled_value_, 1,24,24);
   if (parseBooleanValue(ntp_enabled_value_))
   {
     ntp_poll_timer_.start();
@@ -346,12 +362,13 @@ void Iot::setup()
 
   ntp_poll_timer_.setup([this]()
                         { maybeSetRTCfromNTP_(); },
-                        NTP_POLL_DELAY_SECONDS);
+                        ntp_poll_interval_*60*60);
 
   this->show_ampm_value_[0] = '\0';
   this->ldr_sensitivity_value_[0] = '\0';
   this->color_value_[0] = '\0';
   this->ntp_enabled_value_[0] = '\0';
+  this->ntp_interval_value_[0] = '\0';
   this->timezone_value_[0] = '\0';
 
   iot_web_conf_.setupUpdateServer(
@@ -366,6 +383,7 @@ void Iot::setup()
   iot_web_conf_.addParameterGroup(&display_group_);
 
   time_group_.addItem(&ntp_enabled_param_);
+  time_group_.addItem(&ntp_interval_param_);
   time_group_.addItem(&timezone_param_);
   time_group_.addItem(&manual_time_param_);
   iot_web_conf_.addParameterGroup(&time_group_);
@@ -422,6 +440,9 @@ void Iot::maybeSetRTCfromNTP_()
   }
 
   int tz = parseNumberValue(timezone_value_, 0, 459, 0);
+#if SNTP_GET_SERVERS_FROM_DHCP || SNTP_GET_SERVERS_FROM_DHCPV6
+  sntp_servermode_dhcp(1); 
+#endif
   configTzTime(posix[tz], NTP_SERVER);
 
   struct tm timeinfo;
@@ -438,7 +459,10 @@ void Iot::maybeSetRTCfromNTP_()
     digitalWrite(LED_PIN, HIGH);
 #endif
 
-  rtc_->adjust(DateTime(timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
+  if (get_rtc_found()) {
+    rtc_->adjust(DateTime(timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday,
+                          timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
+  }
   DLOG("RTC set to:");
   DLOGLN(&timeinfo, "%A, %B %d %Y %H:%M:%S");
   DLOG("Timezone:");
@@ -447,23 +471,49 @@ void Iot::maybeSetRTCfromNTP_()
 
 void Iot::setRTCfromConfig_()
 {
-  const DateTime now = rtc_->now();
-  uint16_t year = now.year();
-  uint8_t month = now.month();
-  uint8_t day = now.day();
-  uint8_t hour = now.hour();
-  uint8_t minute = now.minute();
-  uint8_t second = now.second();
-  bool datetime_changed = false;
+  if (get_rtc_found()) {
+    const DateTime now = rtc_->now();
+    uint16_t year = now.year();
+    uint8_t month = now.month();
+    uint8_t day = now.day();
+    uint8_t hour = now.hour();
+    uint8_t minute = now.minute();
+    uint8_t second = now.second();
+    bool datetime_changed = false;
 
-  if (manual_time_value_[0] != 0 && parseTimeValue(manual_time_value_, &hour, &minute, &second))
-  {
-    datetime_changed = true;
-  }
+    if (manual_time_value_[0] != 0 &&
+        parseTimeValue(manual_time_value_, &hour, &minute, &second)) {
+      datetime_changed = true;
+    }
 
-  if (datetime_changed)
-  {
-    rtc_->adjust(DateTime(year, month, day, hour, minute, second));
+    if (datetime_changed) {
+      rtc_->adjust(DateTime(year, month, day, hour, minute, second));
+    }
+  } else {
+    uint16_t year = 0;
+    uint8_t month = 0;
+    uint8_t day = 0;
+    uint8_t hour = 0;
+    uint8_t minute = 0;
+    uint8_t second = 0;
+    if (manual_time_value_[0] != 0 &&
+        parseTimeValue(manual_time_value_, &hour, &minute, &second)) {
+      struct tm timeinfo = {0, };
+      if (!getLocalTime(&timeinfo))
+      {
+        DLOG("Local time invalid. set some 'usable' data");
+        timeinfo.tm_year = (2016 - 1900)+1;
+        timeinfo.tm_mon = 1;
+      }
+      timeinfo.tm_hour = hour;
+      timeinfo.tm_min = minute;
+      timeinfo.tm_sec = second;
+      time_t t = mktime(&timeinfo);
+      struct timeval tv;
+      tv.tv_usec = 0;
+      tv.tv_sec = t;
+      settimeofday(&tv, NULL);
+    }
   }
 }
 

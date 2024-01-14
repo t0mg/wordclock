@@ -20,6 +20,7 @@
 #include "src/Iot.h"
 #include "src/nodo.h" // Nodo stuff
 RTC_DS3231 rtc;
+boolean rtc_found = false;
 
 // TODO: refactor so we don't need to initialize another clockface here.
 #ifdef NODO
@@ -42,12 +43,16 @@ void setup()
 #ifdef SDA_PIN
   Wire.begin(SDA_PIN, SCL_PIN);
 #endif
-  bool result = rtc.begin(); // pins for RTC swapped over on V1.0
-  DCHECK(result, "RTC didn't start");
-  if (rtc.lostPower())
-  {
-    DCHECK("RTC lost power. Battery was removed ?");
+  rtc_found = rtc.begin(); // pins for RTC swapped over on V1.0
+  if (rtc_found) {
+    DLOG("RTC detected");
+    if (rtc.lostPower()) {
+      DCHECK("RTC lost power. Battery was removed ?");
+    }
+  } else {
+    DLOG("RTC not found");
   }
+  iot.set_rtc_found(rtc_found);
 
   display.setup();
   iot.setup();
@@ -58,8 +63,20 @@ void loop()
 {
   long ts_now = millis();
   if ((ts_now - last_rtc_update) > 99) {
-    DateTime now = rtc.now();
-    display.updateForTime(now.hour(), now.minute(), now.second());
+    if ( rtc_found ) {
+      DateTime now = rtc.now();
+      display.updateForTime(now.hour(), now.minute(), now.second());
+    } else {
+      struct tm timeinfo;
+      // Get the local time from the esp's rtc.
+      if (getLocalTime(&timeinfo)) {
+        auto now = DateTime(timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday,
+                            timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+        display.updateForTime(now.hour(), now.minute(), now.second());
+      } else {
+        display.updateForTime(0, 0, 0);
+      }
+    }
     last_rtc_update = ts_now;
   }
 
