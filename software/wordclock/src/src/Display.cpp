@@ -33,11 +33,6 @@ void Display::loop()
 void Display::setClockFace(ClockFace* clockface)
 {
   DLOGLN("Updating clockface");
-  // if (clockface == _clockFace) {
-  //     DLOGLN("cancel: refs are the same");
-  //     return;
-  // }
-  // _clockFace.~ClockFace();
   _clockFace = clockface;
   _update();
 }

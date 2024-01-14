@@ -617,7 +617,7 @@ bool Iot::connectMQTT_()
   }
   DLOGLN("Connected!");
 
-  mqtt_client_.subscribe("test/action");
+  mqtt_client_.subscribe("color/set");
   return true;
 }
 
@@ -643,9 +643,11 @@ void Iot::mqttMessageReceived_(String &topic, String &payload)
 {
   DLOGLN("Incoming: " + topic + " - " + payload);
   // TODO Update config and trigger saveconfig.
+  display_->setColor(
+    parseColorValue(payload.c_str(), parseColorValue(color_value_, RgbColor(255, 255, 255))));
+  // Doing this currently reboots the clock, which isn't great.
   // strncpy(
-  //   color_value_,
-  //   someNewcolor,
-  //   IOT_CONFIG_VALUE_LENGTH);
+    // color_value_, payload.c_str(),
+    // IOT_CONFIG_VALUE_LENGTH);
   // iot_web_conf_.saveConfig();
 }
