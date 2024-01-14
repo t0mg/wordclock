@@ -247,7 +247,7 @@ body > div > div:last-child {\
 
 Iot::Iot(Display *display, RTC_DS3231 *rtc)
     : web_server_(WEB_SERVER_PORT), display_(display), rtc_(rtc),
- 
+
       color_param_("Color", "color", color_value_,
                    IOT_CONFIG_VALUE_LENGTH, "#RRGGBB", "#FFFFFF",
                    "data-type='color' pattern='#[0-9a-fA-F]{6}' "
@@ -296,31 +296,32 @@ void Iot::clearTransientParams_()
 // workaround of representing booleans as 0 or 1 integers.
 void Iot::updateClockFromParams_()
 {
-  switch(parseNumberValue(clockface_language_value_, 0, 10, 0)) {
-    case 1:
-    {
-      display_->setClockFace(&clockFaceNL);
-      DLOGLN("Language set to Dutch");
-      break;
-    }
-    case 2:
-    {
-      display_->setClockFace(&clockFaceFR);
-      DLOGLN("Language set to French");
-      break;
-    }
-    case 3:
-    {
-      display_->setClockFace(&clockFaceIT);
-      DLOGLN("Language set to Italian");
-      break;
-    }
-    default:
-    {
-      display_->setClockFace(&clockFaceEN);
-      DLOGLN("Language set to English");
-      break;
-    }
+  switch (parseNumberValue(clockface_language_value_, 0, 10, 0))
+  {
+  case 1:
+  {
+    display_->setClockFace(&clockFaceNL);
+    DLOGLN("Language set to Dutch");
+    break;
+  }
+  case 2:
+  {
+    display_->setClockFace(&clockFaceFR);
+    DLOGLN("Language set to French");
+    break;
+  }
+  case 3:
+  {
+    display_->setClockFace(&clockFaceIT);
+    DLOGLN("Language set to Italian");
+    break;
+  }
+  default:
+  {
+    display_->setClockFace(&clockFaceEN);
+    DLOGLN("Language set to English");
+    break;
+  }
   }
 
   display_->setColor(
@@ -355,8 +356,10 @@ void Iot::setup()
   this->timezone_value_[0] = '\0';
 
   iot_web_conf_.setupUpdateServer(
-    [this](const char* updatePath) { http_updater_.setup(&web_server_, updatePath); },
-    [this](const char* userName, char* password) { http_updater_.updateCredentials(userName, password); });
+      [this](const char *updatePath)
+      { http_updater_.setup(&web_server_, updatePath); },
+      [this](const char *userName, char *password)
+      { http_updater_.updateCredentials(userName, password); });
 
   display_group_.addItem(&boot_animation_param_);
   display_group_.addItem(&clockface_language_param_);
@@ -386,7 +389,8 @@ void Iot::setup()
 
   clearTransientParams_();
   updateClockFromParams_();
-  if (parseBooleanValue(boot_animation_enabled_value_)) {
+  if (parseBooleanValue(boot_animation_enabled_value_))
+  {
     display_->runBootAnimation();
   }
   web_server_.on("/", [this]
@@ -427,16 +431,9 @@ void Iot::maybeSetRTCfromNTP_()
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo))
   {
-#ifdef LED_PIN
-    digitalWrite(LED_PIN, LOW);
-#endif
     DLOGLN("Failed to obtain time.");
     return;
   }
-#ifdef LED_PIN
-  else
-    digitalWrite(LED_PIN, HIGH);
-#endif
 
   rtc_->adjust(DateTime(timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
   DLOG("RTC set to:");
