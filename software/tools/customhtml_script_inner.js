@@ -11,7 +11,7 @@ document.addEventListener(
     function (e) {
 
         // Move network session at the bottom if SSID is set.
-        if(!!document.getElementById("iwcWifiSsid").value) {
+        if(!!document.getElementById("iwcWifiSsid")?.value) {
           const f = document.getElementById("iwcSys");
           f.parentElement.removeChild(f);
           document.querySelector('form').insertBefore(f, document.querySelector('button[type=submit]'));
@@ -133,5 +133,8 @@ document.addEventListener(
             colorInputEl.addEventListener('input', updateLogoColor);
             updateLogoColor();
         }
+
+        // Reveal the form.
+        document.body.classList.add('ready');
     }
 )

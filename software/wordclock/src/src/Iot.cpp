@@ -6,6 +6,7 @@
 
 #include <NeoPixelBus.h>
 #include <WiFi.h>
+#include <MQTT.h>
 
 // Name of this IoT object.
 #define THING_NAME "WordClock"
@@ -13,7 +14,7 @@
 #define INITIAL_WIFI_AP_PASSWORD "12345678"
 // IoT configuration version. Change this whenever IotWebConf object's
 // configuration structure changes.
-#define CONFIG_VERSION "4"
+#define CONFIG_VERSION "5"
 // Port used by the IotWebConf HTTP server.
 #define WEB_SERVER_PORT 80
 // Default timezone index from Timezones.h (Paris).
@@ -38,11 +39,11 @@ namespace
 
   // Custom Javascript block that will be added to the header.
   // See customconfig.js for human-readable version.
-  const char CUSTOMHTML_SCRIPT_INNER[] PROGMEM = "document.addEventListener(\"DOMContentLoaded\",function(e){document.getElementById(\"iwcWifiSsid\").value&&(e=document.getElementById(\"iwcSys\"),e.parentElement.removeChild(e),document.querySelector(\"form\").insertBefore(e,document.querySelector(\"button[type=submit]\")));document.querySelectorAll(\"[data-type]\").forEach(function(a){a.type=a.getAttribute(\"data-type\")});document.querySelectorAll(\"input[type=password]\").forEach(function(a){var b=document.createElement(\"input\");b.classList.add(\"pwtoggle\");b.type=\
+  const char CUSTOMHTML_SCRIPT_INNER[] PROGMEM = "document.addEventListener(\"DOMContentLoaded\",function(e){document.getElementById(\"iwcWifiSsid\")?.value&&(e=document.getElementById(\"iwcSys\"),e.parentElement.removeChild(e),document.querySelector(\"form\").insertBefore(e,document.querySelector(\"button[type=submit]\")));document.querySelectorAll(\"[data-type]\").forEach(function(a){a.type=a.getAttribute(\"data-type\")});document.querySelectorAll(\"input[type=password]\").forEach(function(a){var b=document.createElement(\"input\");b.classList.add(\"pwtoggle\");b.type=\
 \"button\";b.value=\"\\ud83d\\udc41\\ufe0f\";a.insertAdjacentElement(\"afterend\",b);b.onclick=function(){\"password\"===a.type?(a.type=\"text\",b.value=\"\\ud83d\\udd12\"):(a.type=\"password\",b.value=\"\\ud83d\\udc41\\ufe0f\")}});(e=document.querySelector(\"form\"))&&e.addEventListener(\"submit\",function(){var a=document.querySelector(\"button[type=submit]\");a.innerText=\"Saving...\";a.toggleAttribute(\"disabled\",!0)});document.querySelectorAll(\"input[data-options]\").forEach(function(a){var b=a.value,f=a.getAttribute(\"data-options\").split(\"|\"),\
 c=document.createElement(\"select\");c.name=a.name;c.id=a.id;\"\"===b&&c.appendChild(document.createElement(\"option\"));var d=null;f.forEach(function(l,m){var g=l.split(\"/\"),h=l;1<g.length?(h=g.splice(0,1)[0],d&&h==d.label||(d&&c.appendChild(d),d=document.createElement(\"optgroup\"),d.label=h),h=g.join(\" / \")):d&&(c.appendChild(d),d=null);g=document.createElement(\"option\");g.value=m;g.innerText=h;m==b&&g.toggleAttribute(\"selected\");d?d.appendChild(g):c.appendChild(g)});d&&c.appendChild(d);a.id+=\"-d\";f=a.getAttribute(\"data-controlledby\");\
 var n=a.getAttribute(\"data-showon\");f&&n&&(c.setAttribute(\"data-controlledby\",f),c.setAttribute(\"data-showon\",n));a.insertAdjacentElement(\"beforebegin\",c);a.parentElement.removeChild(a)});document.querySelectorAll(\"input[type=range]\").forEach(function(a){var b=a.getAttribute(\"data-labels\"),f=b&&b.split(\"|\");b=function(){a.setAttribute(\"data-label\",f?f[parseInt(a.value,10)]||a.value:a.value)};a.oninput=b;b()});document.querySelectorAll(\"[data-controlledby]\").forEach(function(a){var b=document.getElementById(a.getAttribute(\"data-controlledby\")),\
-f=a.getAttribute(\"data-showon\").split(\"|\"),c=function(){a.parentElement.style.display=0>f.indexOf(b.value+\"\")?\"none\":\"\"};b.addEventListener(\"change\",c);c()});var k=document.querySelector(\"input[type=color]\");k&&(e=function(){document.querySelector(\".logoContainer\").style.backgroundColor=k.value},k.addEventListener(\"input\",e),e())});";
+f=a.getAttribute(\"data-showon\").split(\"|\"),c=function(){a.parentElement.style.display=0>f.indexOf(b.value+\"\")?\"none\":\"\"};b.addEventListener(\"change\",c);c()});var k=document.querySelector(\"input[type=color]\");k&&(e=function(){document.querySelector(\".logoContainer\").style.backgroundColor=k.value},k.addEventListener(\"input\",e),e());document.body.classList.add(\"ready\")});";
 
   // Custom style added to the style tag.
   const char CUSTOMHTML_STYLE_INNER[] PROGMEM = "\n\
@@ -55,6 +56,24 @@ a {\
   color: #16a1e7;}\
 div {\
   padding: 0;}\
+.de {\
+  background-color: transparent;}\
+.de input {\
+  background-color: #ffd4a6; }\
+.em {\
+  color: #ffb86d; }\
+body > div > form, body > div > div {\
+  display: none !important; }\
+body > div:has(> form)::after {\
+  content: 'LOADING...';\
+  display: block;\
+  font-size: 1.5em;\
+  text-align: center;\
+  margin-top: 50%;}\
+body.ready > div > form, body.ready > div > div {\
+  display: block !important;}\
+body.ready > div:has(> form)::after {\
+  display: none;}\
 .logo {\
   width: 80vw;\
   max-width: 160px;\
@@ -96,7 +115,8 @@ input, select {\
   margin: 0;\
   padding: 5px;\
   width: auto;\
-  line-height: 20px;}\
+  line-height: 20px;\
+  border: none;}\
 input[type=\"range\"] {\
   margin-left: 30px;\
   position: relative;\
@@ -247,23 +267,26 @@ body > div > div:last-child {\
 
 Iot::Iot(Display *display, RTC_DS3231 *rtc)
     : web_server_(WEB_SERVER_PORT), display_(display), rtc_(rtc),
- 
-      color_param_("Color", "color", color_value_,
-                   IOT_CONFIG_VALUE_LENGTH, "#RRGGBB", "#FFFFFF",
-                   "data-type='color' pattern='#[0-9a-fA-F]{6}' "
-                   "style='border-width: 1px; padding: 1px;'"),
+
+      display_group_("display_group", "Display"),
+      boot_animation_param_(
+          "Startup animation", "boot_animation_enabled", boot_animation_enabled_value_,
+          IOT_CONFIG_VALUE_LENGTH, "1", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
+      clockface_language_param_(
+          "Clock face language", "clockface_language", clockface_language_value_, IOT_CONFIG_VALUE_LENGTH,
+          DEFAULT_CLOCKFACE_LANGUAGE, DEFAULT_CLOCKFACE_LANGUAGE, "data-options='English|Dutch|French|Italian'"),
       show_ampm_param_(
           "AM/PM indicator", "show_ampm", show_ampm_value_,
           IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On' data-controlledby='clockface_language' data-showon='0'"),
       ldr_sensitivity_param_(
           "Light sensor sensitivity", "ldr_sensitivity", ldr_sensitivity_value_,
           IOT_CONFIG_VALUE_LENGTH, "5", 0, 10, 1, "data-labels='Off'"),
-      clockface_language_param_(
-          "Clock face language", "clockface_language", clockface_language_value_, IOT_CONFIG_VALUE_LENGTH,
-          DEFAULT_CLOCKFACE_LANGUAGE, DEFAULT_CLOCKFACE_LANGUAGE, "data-options='English|Dutch|French|Italian'"),
-      boot_animation_param_(
-          "Startup animation", "boot_animation_enabled", boot_animation_enabled_value_,
-          IOT_CONFIG_VALUE_LENGTH, "1", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
+      color_param_("Color", "color", color_value_,
+                   IOT_CONFIG_VALUE_LENGTH, "#FFFFFF", "#RRGGBB",
+                   "data-type='color' pattern='#[0-9a-fA-F]{6}' "
+                   "style='border-width: 1px; padding: 1px;'"),
+
+      time_group_("time_group", "Time"),
       ntp_enabled_param_(
           "Use network time (requires WiFi)", "ntp_enabled", ntp_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
@@ -272,8 +295,15 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
           DEFAULT_TIMEZONE, DEFAULT_TIMEZONE, locationOptions),
       manual_time_param_("Time", "time", manual_time_value_, IOT_CONFIG_VALUE_LENGTH,
                          "hh:mm:ss", nullptr, "data-type='time' pattern='\\d{1,2}:\\d{1,2}:\\d{1,2}' step='1' data-controlledby='ntp_enabled' data-showon='0'"),
-      time_group_("time_group", "Time"),
-      display_group_("display_group", "Display"),
+
+      mqtt_group_("mqtt_group", "MQTT (work in progress)"),
+      mqtt_enabled_param_(
+          "Note: when enabled, config updates trigger a reboot", "mqtt_enabled", mqtt_enabled_value_,
+          IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
+      mqtt_server_param_("MQTT server", "mqtt_server", mqtt_server_value_, IOT_CONFIG_VALUE_LENGTH, nullptr, nullptr, "data-controlledby='mqtt_enabled' data-showon='1'"),
+      mqtt_user_param_("MQTT user", "mqtt_user", mqtt_user_value_, IOT_CONFIG_VALUE_LENGTH, nullptr, nullptr, "data-controlledby='mqtt_enabled' data-showon='1'"),
+      mqtt_password_param_("MQTT password", "mqtt_password", mqtt_password_value_, IOT_CONFIG_VALUE_LENGTH, nullptr, nullptr, "data-controlledby='mqtt_enabled' data-showon='1'"),
+
       iot_web_conf_(THING_NAME, &dns_server_, &web_server_,
                     INITIAL_WIFI_AP_PASSWORD, CONFIG_VERSION)
 {
@@ -282,6 +312,10 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
   this->color_value_[0] = '\0';
   this->ntp_enabled_value_[0] = '\0';
   this->timezone_value_[0] = '\0';
+  this->mqtt_enabled_value_[0] = '\0';
+  this->mqtt_server_value_[0] = '\0';
+  this->mqtt_user_value_[0] = '\0';
+  this->mqtt_password_value_[0] = '\0';
 }
 
 Iot::~Iot() {}
@@ -296,31 +330,32 @@ void Iot::clearTransientParams_()
 // workaround of representing booleans as 0 or 1 integers.
 void Iot::updateClockFromParams_()
 {
-  switch(parseNumberValue(clockface_language_value_, 0, 10, 0)) {
-    case 1:
-    {
-      display_->setClockFace(&clockFaceNL);
-      DLOGLN("Language set to Dutch");
-      break;
-    }
-    case 2:
-    {
-      display_->setClockFace(&clockFaceFR);
-      DLOGLN("Language set to French");
-      break;
-    }
-    case 3:
-    {
-      display_->setClockFace(&clockFaceIT);
-      DLOGLN("Language set to Italian");
-      break;
-    }
-    default:
-    {
-      display_->setClockFace(&clockFaceEN);
-      DLOGLN("Language set to English");
-      break;
-    }
+  switch (parseNumberValue(clockface_language_value_, 0, 10, 0))
+  {
+  case 1:
+  {
+    display_->setClockFace(&clockFaceNL);
+    DLOGLN("Language set to Dutch");
+    break;
+  }
+  case 2:
+  {
+    display_->setClockFace(&clockFaceFR);
+    DLOGLN("Language set to French");
+    break;
+  }
+  case 3:
+  {
+    display_->setClockFace(&clockFaceIT);
+    DLOGLN("Language set to Italian");
+    break;
+  }
+  default:
+  {
+    display_->setClockFace(&clockFaceEN);
+    DLOGLN("Language set to English");
+    break;
+  }
   }
 
   display_->setColor(
@@ -353,10 +388,16 @@ void Iot::setup()
   this->color_value_[0] = '\0';
   this->ntp_enabled_value_[0] = '\0';
   this->timezone_value_[0] = '\0';
+  this->mqtt_enabled_value_[0] = '\0';
+  this->mqtt_server_value_[0] = '\0';
+  this->mqtt_user_value_[0] = '\0';
+  this->mqtt_password_value_[0] = '\0';
 
   iot_web_conf_.setupUpdateServer(
-    [this](const char* updatePath) { http_updater_.setup(&web_server_, updatePath); },
-    [this](const char* userName, char* password) { http_updater_.updateCredentials(userName, password); });
+      [this](const char *updatePath)
+      { http_updater_.setup(&web_server_, updatePath); },
+      [this](const char *userName, char *password)
+      { http_updater_.updateCredentials(userName, password); });
 
   display_group_.addItem(&boot_animation_param_);
   display_group_.addItem(&clockface_language_param_);
@@ -370,8 +411,17 @@ void Iot::setup()
   time_group_.addItem(&manual_time_param_);
   iot_web_conf_.addParameterGroup(&time_group_);
 
+  mqtt_group_.addItem(&mqtt_enabled_param_);
+  mqtt_group_.addItem(&mqtt_server_param_);
+  mqtt_group_.addItem(&mqtt_user_param_);
+  mqtt_group_.addItem(&mqtt_password_param_);
+  iot_web_conf_.addParameterGroup(&mqtt_group_);
+
   iot_web_conf_.setConfigSavedCallback([this]()
                                        { handleConfigSaved_(); });
+
+  iot_web_conf_.setFormValidator([this](iotwebconf::WebRequestWrapper *webRequestWrapper)
+                                 { return formValidator_(webRequestWrapper); });
 
   iot_web_conf_.setWifiConnectionCallback([this]()
                                           { handleWifiConnection_(); });
@@ -386,13 +436,21 @@ void Iot::setup()
 
   clearTransientParams_();
   updateClockFromParams_();
-  if (parseBooleanValue(boot_animation_enabled_value_)) {
+  if (parseBooleanValue(boot_animation_enabled_value_))
+  {
     display_->runBootAnimation();
   }
   web_server_.on("/", [this]
                  { handleHttpToRoot_(); });
   web_server_.onNotFound([this]
                          { iot_web_conf_.handleNotFound(); });
+
+  if (parseBooleanValue(mqtt_enabled_value_))
+  {
+    mqtt_client_.begin(mqtt_server_value_, net_);
+    mqtt_client_.onMessage([this](String &topic, String &payload)
+                           { mqttMessageReceived_(topic, payload); });
+  }
 
   initialized_ = true;
 }
@@ -404,6 +462,30 @@ void Iot::loop()
   {
     iot_web_conf_.doLoop();
     ntp_poll_timer_.loop();
+
+    if (parseBooleanValue(mqtt_enabled_value_))
+    {
+      mqtt_client_.loop();
+      if (needs_MQTT_connect_)
+      {
+        if (connectMQTT_())
+        {
+          needs_MQTT_connect_ = false;
+        }
+      }
+      else if ((iot_web_conf_.getState() == iotwebconf::OnLine) && (!mqtt_client_.connected()))
+      {
+        DLOGLN("MQTT reconnect");
+        connectMQTT_();
+      }
+    }
+  }
+
+  if (needs_reboot_)
+  {
+    DLOGLN("Rebooting after 1 second.");
+    iot_web_conf_.delay(1000);
+    ESP.restart();
   }
 }
 
@@ -480,14 +562,90 @@ void Iot::handleHttpToRoot_()
   iot_web_conf_.handleConfig();
 }
 
+bool Iot::formValidator_(iotwebconf::WebRequestWrapper *webRequestWrapper)
+{
+  DLOGLN("Validating form.");
+  bool valid = true;
+  if (webRequestWrapper->arg(mqtt_enabled_param_.getId()).equals("1"))
+  {
+    int l = webRequestWrapper->arg(mqtt_server_param_.getId()).length();
+    if (l < 3)
+    {
+      mqtt_server_param_.errorMessage = "Please provide at least 3 characters!";
+      valid = false;
+    }
+  }
+  return valid;
+}
+
 void Iot::handleConfigSaved_()
 {
   DLOGLN("Configuration was updated.");
-  updateClockFromParams_();
+  if (parseBooleanValue(mqtt_enabled_value_))
+  {
+    needs_reboot_ = true;
+  }
+  else
+  {
+    updateClockFromParams_();
+  }
 }
 
 void Iot::handleWifiConnection_()
 {
   DLOGLN("Wifi connected.");
+  if (parseBooleanValue(mqtt_enabled_value_))
+  {
+    needs_MQTT_connect_ = true;
+  }
   maybeSetRTCfromNTP_();
+}
+
+bool Iot::connectMQTT_()
+{
+  unsigned long now = millis();
+  if (1000 > now - last_mqtt_connection_attempt_)
+  {
+    // Do not repeat within 1 sec.
+    return false;
+  }
+  DLOGLN("Connecting to MQTT server...");
+  if (!connectMqttOptions_())
+  {
+    last_mqtt_connection_attempt_ = now;
+    return false;
+  }
+  DLOGLN("Connected!");
+
+  mqtt_client_.subscribe("test/action");
+  return true;
+}
+
+bool Iot::connectMqttOptions_()
+{
+  bool result;
+  if (mqtt_password_value_[0] != '\0')
+  {
+    result = mqtt_client_.connect(iot_web_conf_.getThingName(), mqtt_user_value_, mqtt_password_value_);
+  }
+  else if (mqtt_user_value_[0] != '\0')
+  {
+    result = mqtt_client_.connect(iot_web_conf_.getThingName(), mqtt_user_value_);
+  }
+  else
+  {
+    result = mqtt_client_.connect(iot_web_conf_.getThingName());
+  }
+  return result;
+}
+
+void Iot::mqttMessageReceived_(String &topic, String &payload)
+{
+  DLOGLN("Incoming: " + topic + " - " + payload);
+  // TODO Update config and trigger saveconfig.
+  // strncpy(
+  //   color_value_,
+  //   someNewcolor,
+  //   IOT_CONFIG_VALUE_LENGTH);
+  // iot_web_conf_.saveConfig();
 }
