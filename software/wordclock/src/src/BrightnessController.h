@@ -53,7 +53,7 @@ public:
     changed_ = false;
     return res;
   };
-  void setOriginalColor(RgbColor color) { original_ = color; }
+  void setOriginalColor(RgbColor color);
   RgbColor getCorrectedColor() { return corrected_; };
 
   /*!

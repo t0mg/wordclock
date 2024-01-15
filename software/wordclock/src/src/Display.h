@@ -46,9 +46,6 @@ private:
   // Whether the display should show AM/PM information.
   bool _show_ampm = 0;
 
-  // Color of the LEDs. Can be manipulated via Web configuration interface.
-  RgbColor _color;
-
   // Addressable bus to control the LEDs.
   NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> _pixels;
 

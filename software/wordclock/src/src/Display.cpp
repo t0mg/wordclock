@@ -17,15 +17,16 @@ void Display::setup()
 
 void Display::loop()
 {
-  _brightnessController.loop();
   if (_bootAnimations.IsAnimating()) {
     _bootAnimations.UpdateAnimations();
   } else {
     _animations.UpdateAnimations();
     if (_brightnessController.hasChanged())
     {
+      DLOGLN("Brightness has changed, updating");
       _update(30); // Update in 300 ms
     }
+    _brightnessController.loop();
   }
   _pixels.Show();
 }
@@ -33,11 +34,6 @@ void Display::loop()
 void Display::setClockFace(ClockFace* clockface)
 {
   DLOGLN("Updating clockface");
-  // if (clockface == _clockFace) {
-  //     DLOGLN("cancel: refs are the same");
-  //     return;
-  // }
-  // _clockFace.~ClockFace();
   _clockFace = clockface;
   _update();
 }
@@ -45,9 +41,7 @@ void Display::setClockFace(ClockFace* clockface)
 void Display::setColor(const RgbColor &color)
 {
   DLOGLN("Updating color");
-  _color = color;
   _brightnessController.setOriginalColor(color);
-  _update();
 }
 
 void Display::_update(int animationSpeed)

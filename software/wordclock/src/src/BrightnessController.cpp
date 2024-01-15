@@ -4,6 +4,13 @@
 
 BrightnessController::BrightnessController() {}
 
+void BrightnessController::setOriginalColor(RgbColor color)
+{
+  original_ = color;
+  corrected_ = gammaAdjust(original_);
+  changed_ = true;
+}
+
 void BrightnessController::setup()
 {
   lightSensor_.setup();

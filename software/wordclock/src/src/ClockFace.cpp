@@ -816,8 +816,7 @@ bool ItalianClockFace::stateForTime(int hour, int minute, int second, bool show_
   DLOGLN("update state");
 
   // Reset the board to all black
-  for (int i = 0; i < NEOPIXEL_COUNT; i++)
-    _state[i] = false;
+  clearDisplay();
 
   int leftover = minute % 5;
   minute = minute - leftover;
