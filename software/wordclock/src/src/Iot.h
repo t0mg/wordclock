@@ -69,6 +69,10 @@ private:
   WebServer web_server_;
   // Server for OTA firmware update.
   HTTPUpdateServer http_updater_;
+  // MQTT client.
+  MQTTClient mqtt_client_;
+  // WiFi client (for MQTT).
+  WiFiClient net_;
 
   // Word clock display.
   Display *display_ = nullptr;
@@ -147,32 +151,6 @@ private:
   iotwebconf::PasswordParameter mqtt_password_param_;
   // MQTT password value.
   char mqtt_password_value_[IOT_CONFIG_VALUE_LENGTH];
-
-  // Enable AM/PM display.
-  IotRangeValueParameter show_ampm_param_;
-  // Value of the LDR sensitivity parameter.
-  char show_ampm_value_[IOT_CONFIG_VALUE_LENGTH];
-
-  // Sensitivity parameter for the LDR.
-  IotRangeValueParameter ldr_sensitivity_param_;
-  // Value of the LDR sensitivity parameter.
-  char ldr_sensitivity_value_[IOT_CONFIG_VALUE_LENGTH];
-
-  // Text color parameter.
-  iotwebconf::TextParameter color_param_;
-  // Value of the color parameter.
-  char color_value_[IOT_CONFIG_VALUE_LENGTH];
-
-  // Clockface language selctor.
-  iotwebconf::NumberParameter clockface_language_param_;
-  // Value of the LDR sensitivity parameter.
-  char clockface_language_value_[IOT_CONFIG_VALUE_LENGTH];
-
-  // Enables the boot animation.
-  IotRangeValueParameter boot_animation_param_;
-  // Value of the boot animation setting option.
-  char boot_animation_enabled_value_[IOT_CONFIG_VALUE_LENGTH];
-
 
   // Enables the ntp interval.
   IotRangeValueParameter ntp_interval_param_;
