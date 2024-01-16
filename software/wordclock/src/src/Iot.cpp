@@ -7,6 +7,7 @@
 #include <NeoPixelBus.h>
 #include <WiFi.h>
 #include <MQTT.h>
+#include <esp_sntp.h>
 
 // Name of this IoT object.
 #define THING_NAME "WordClock"
@@ -25,8 +26,6 @@
 #define HTTP_OK 200
 // NTP server.
 #define NTP_SERVER "pool.ntp.org"
-// When NTP is enabled, define how often to update the RTC.
-#define NTP_POLL_DELAY_SECONDS 86400 // Once a day is plenty enough.
 
 namespace
 {
@@ -365,12 +364,13 @@ void Iot::updateClockFromParams_()
 
   if (parseBooleanValue(ntp_enabled_value_))
   {
-    ntp_poll_timer_.start();
     maybeSetRTCfromNTP_();
   }
   else
   {
-    ntp_poll_timer_.stop();
+    if (sntp_enabled()) {
+      sntp_stop();
+    }
     setRTCfromConfig_();
   }
 }
@@ -378,10 +378,6 @@ void Iot::updateClockFromParams_()
 void Iot::setup()
 {
   DCHECK(!initialized_, "[WARN] Trying to setup Iot multiple times.");
-
-  ntp_poll_timer_.setup([this]()
-                        { maybeSetRTCfromNTP_(); },
-                        NTP_POLL_DELAY_SECONDS);
 
   this->show_ampm_value_[0] = '\0';
   this->ldr_sensitivity_value_[0] = '\0';
@@ -461,7 +457,6 @@ void Iot::loop()
   if (initialized_)
   {
     iot_web_conf_.doLoop();
-    ntp_poll_timer_.loop();
 
     if (parseBooleanValue(mqtt_enabled_value_))
     {
@@ -489,6 +484,26 @@ void Iot::loop()
   }
 }
 
+/**
+ * Small hack, to get access to rtc from inside this
+ * lowlevel callback from sntp.
+ */
+Iot *iot_sntp_global = nullptr;
+void time_sync_notification_cb(struct timeval *tv)
+{
+    DLOGLN("Notification of a time synchronization event");
+    if ( tv->tv_sec > 0 ) {
+      time_t now = tv->tv_sec;
+      struct tm timeinfo;
+      localtime_r(&now, &timeinfo);
+      iot_sntp_global->get_rtc()->adjust(
+          DateTime(timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday,
+                   timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
+      DLOG("Interval for sync: ");
+      DLOGLN(sntp_get_sync_interval());
+    }
+}
+
 void Iot::maybeSetRTCfromNTP_()
 {
   if (!parseBooleanValue(ntp_enabled_value_))
@@ -504,27 +519,23 @@ void Iot::maybeSetRTCfromNTP_()
   }
 
   int tz = parseNumberValue(timezone_value_, 0, 459, 0);
-  configTzTime(posix[tz], NTP_SERVER);
 
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo))
-  {
-#ifdef LED_PIN
-    digitalWrite(LED_PIN, LOW);
-#endif
-    DLOGLN("Failed to obtain time.");
-    return;
+  esp_netif_init();
+  if (sntp_enabled()) {
+    sntp_stop();
   }
-#ifdef LED_PIN
-  else
-    digitalWrite(LED_PIN, HIGH);
+  sntp_setoperatingmode(SNTP_OPMODE_POLL);
+#if SNTP_GET_SERVERS_FROM_DHCP || SNTP_GET_SERVERS_FROM_DHCPV6
+  DLOGLN("Enable from dhcp");
+  sntp_servermode_dhcp(1);
 #endif
+  sntp_setservername(0, (char *)NTP_SERVER);
+  sntp_init();
+  setenv("TZ", posix[tz], 1);
+  tzset();
 
-  rtc_->adjust(DateTime(timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
-  DLOG("RTC set to:");
-  DLOGLN(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-  DLOG("Timezone:");
-  DLOGLN(location[tz]);
+  iot_sntp_global = this;
+  sntp_set_time_sync_notification_cb(time_sync_notification_cb);
 }
 
 void Iot::setRTCfromConfig_()
