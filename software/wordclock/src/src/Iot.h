@@ -2,7 +2,6 @@
 #define _IOT_H_
 
 #include "Display.h"
-#include "Timer.h"
 #include "ClockFace.h"
 #include "IotRangeValueParameter.h"
 
@@ -28,6 +27,9 @@ public:
 
   void setup();
   void loop();
+
+  // Used for the C callback for the NTP sync.
+  RTC_DS3231 *get_rtc() { return rtc_; }
 
 private:
   // Clears the values of transient parameters.
@@ -75,9 +77,6 @@ private:
 
   // RTC.
   RTC_DS3231 *rtc_ = nullptr;
-
-  // NTP poll timer.
-  Timer ntp_poll_timer_;
 
   // Whether to reboot the ESP (after config updates if MQTT is enabled).
   bool needs_reboot_ = false;
