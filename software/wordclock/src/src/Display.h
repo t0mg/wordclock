@@ -28,6 +28,9 @@ public:
   // Sets the sensor sentivity of the brightness controller.
   void setSensorSentivity(int value) { _brightnessController.setSensorSensitivity(value); }
 
+  // Sets the sensor sentivity of the brightness controller.
+  float getRawSensorValue() { return _brightnessController.readSensor(); }
+
   // Sets whether to show AM/PM information on the display.
   void setShowAmPm(bool show_ampm) { _show_ampm = show_ampm; }
 

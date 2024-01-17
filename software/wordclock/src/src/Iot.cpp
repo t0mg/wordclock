@@ -443,6 +443,10 @@ void Iot::setup()
 
   if (parseBooleanValue(mqtt_enabled_value_))
   {
+    String prefix(iot_web_conf_.getThingName());
+    prefix.toLowerCase();
+    prefix.replace(" ", "");
+    mqtt_topic_prefix_ = prefix;
     mqtt_client_.begin(mqtt_server_value_, net_);
     mqtt_client_.onMessage([this](String &topic, String &payload)
                            { mqttMessageReceived_(topic, payload); });
@@ -468,10 +472,26 @@ void Iot::loop()
           needs_MQTT_connect_ = false;
         }
       }
-      else if ((iot_web_conf_.getState() == iotwebconf::OnLine) && (!mqtt_client_.connected()))
+      else if (iot_web_conf_.getState() == iotwebconf::OnLine)
       {
-        DLOGLN("MQTT reconnect");
-        connectMQTT_();
+        if (mqtt_client_.connected())
+        {
+          unsigned long now = millis();
+          if (1000 < now - last_mqtt_report_)
+          {
+            last_mqtt_report_ = now;
+            float sensorValue = display_->getRawSensorValue();
+            char charVal[10];                
+            dtostrf(sensorValue, 4, 3, charVal);
+            DLOGLN(sensorValue);
+            mqtt_client_.publish(mqtt_topic_prefix_ + "/status/ldr", charVal);
+          }
+        }
+        else
+        {
+          DLOGLN("MQTT reconnect");
+          connectMQTT_();
+        }
       }
     }
   }
@@ -492,7 +512,8 @@ Iot *iot_sntp_global = nullptr;
 void time_sync_notification_cb(struct timeval *tv)
 {
     DLOGLN("Notification of a time synchronization event");
-    if ( tv->tv_sec > 0 ) {
+    if ( tv->tv_sec > 0 )
+    {
       time_t now = tv->tv_sec;
       struct tm timeinfo;
       localtime_r(&now, &timeinfo);
@@ -628,7 +649,7 @@ bool Iot::connectMQTT_()
   }
   DLOGLN("Connected!");
 
-  mqtt_client_.subscribe("color/set");
+  mqtt_client_.subscribe(mqtt_topic_prefix_ + "/color/set");
   return true;
 }
 
@@ -653,12 +674,14 @@ bool Iot::connectMqttOptions_()
 void Iot::mqttMessageReceived_(String &topic, String &payload)
 {
   DLOGLN("Incoming: " + topic + " - " + payload);
-  // TODO Update config and trigger saveconfig.
-  display_->setColor(
+  if (topic == mqtt_topic_prefix_ + "/color/set") 
+  {
+    display_->setColor(
     parseColorValue(payload.c_str(), parseColorValue(color_value_, RgbColor(255, 255, 255))));
-  // Doing this currently reboots the clock, which isn't great.
-  // strncpy(
-    // color_value_, payload.c_str(),
-    // IOT_CONFIG_VALUE_LENGTH);
-  // iot_web_conf_.saveConfig();
+    // Doing this currently reboots the clock, which isn't great.
+    // strncpy(
+      // color_value_, payload.c_str(),
+      // IOT_CONFIG_VALUE_LENGTH);
+    // iot_web_conf_.saveConfig();
+  }
 }

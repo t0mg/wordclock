@@ -84,6 +84,12 @@ private:
   // Whether to attempt connecting to MQTT server.
   bool needs_MQTT_connect_ = false;
 
+  // Timestamp of last MQTT push.
+  unsigned long last_mqtt_report_ = 0;
+
+  // MQTT topic prefix, based on the thing name.
+  String mqtt_topic_prefix_;
+
   // Enables the boot animation.
   IotRangeValueParameter boot_animation_param_;
   // Value of the boot animation setting option.
