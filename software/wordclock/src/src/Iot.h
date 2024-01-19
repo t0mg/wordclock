@@ -42,6 +42,15 @@ private:
   void setRTCfromConfig_();
   // Connects to MQTT server.
   bool connectMQTT_();
+  // Toggles the display if payload is "ON" or "OFF".
+  void toggleDisplay_(String payload);
+  // Convenience method to format RgbColor for MQTT publication.
+  static String rgbToMqttString_(RgbColor color)
+  {
+    return String(color.R) + "," + String(color.G) + "," + String(color.B);
+  }
+  // Convenience method to convert an MQTT payload into RgbColor.
+  static bool mqttStringToRgb_(String payload, RgbColor *color);
 
   // Handles HTTP requests to web server's "/" path.
   void handleHttpToRoot_();
@@ -82,12 +91,12 @@ private:
   bool needs_reboot_ = false;
 
   // Whether to attempt connecting to MQTT server.
-  bool needs_MQTT_connect_ = false;
+  bool needs_mqtt_connect_ = false;
 
   // Timestamp of last MQTT push.
   unsigned long last_mqtt_report_ = 0;
 
-  // MQTT topic prefix, based on the thing name.
+  // MQTT topic prefix, derived from the clock name defined in the web UI.
   String mqtt_topic_prefix_;
 
   // Enables the boot animation.

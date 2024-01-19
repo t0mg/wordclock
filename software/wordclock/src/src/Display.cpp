@@ -21,7 +21,7 @@ void Display::loop()
     _bootAnimations.UpdateAnimations();
   } else {
     _animations.UpdateAnimations();
-    if (_brightnessController.hasChanged())
+    if (!_off && _brightnessController.hasChanged())
     {
       DLOGLN("Brightness has changed, updating");
       _update(30); // Update in 300 ms
@@ -44,6 +44,18 @@ void Display::setColor(const RgbColor &color)
   _brightnessController.setOriginalColor(color);
 }
 
+void Display::setOff()
+{
+  _off = true;
+  _update();
+}
+
+void Display::setOn()
+{
+  _off = false;
+  _update();
+}
+
 void Display::_update(int animationSpeed)
 {
   DLOGLN("Updating display");
@@ -54,10 +66,11 @@ void Display::_update(int animationSpeed)
   // For all the LED animate a change from the current visible state to the new
   // one.
   const std::vector<bool> &state = _clockFace->getState();
+
   for (int index = 0; index < state.size(); index++)
   {
     RgbColor originalColor = _pixels.GetPixelColor(index);
-    RgbColor targetColor = state[index] ? _brightnessController.getCorrectedColor() : black;
+    RgbColor targetColor = _off ? black : (state[index] ? _brightnessController.getCorrectedColor() : black);
 
     AnimUpdateCallback animUpdate = [=](const AnimationParam &param) {
       float progress = NeoEase::QuadraticIn(param.progress);

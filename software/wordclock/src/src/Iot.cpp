@@ -26,6 +26,8 @@
 #define HTTP_OK 200
 // NTP server.
 #define NTP_SERVER "pool.ntp.org"
+// LDR MQTT topic publish interval in ms.
+#define MQTT_LDR_PUBLISH_INTERVAL 15000
 
 namespace
 {
@@ -368,7 +370,8 @@ void Iot::updateClockFromParams_()
   }
   else
   {
-    if (sntp_enabled()) {
+    if (sntp_enabled())
+    {
       sntp_stop();
     }
     setRTCfromConfig_();
@@ -465,11 +468,11 @@ void Iot::loop()
     if (parseBooleanValue(mqtt_enabled_value_))
     {
       mqtt_client_.loop();
-      if (needs_MQTT_connect_)
+      if (needs_mqtt_connect_)
       {
         if (connectMQTT_())
         {
-          needs_MQTT_connect_ = false;
+          needs_mqtt_connect_ = false;
         }
       }
       else if (iot_web_conf_.getState() == iotwebconf::OnLine)
@@ -477,14 +480,16 @@ void Iot::loop()
         if (mqtt_client_.connected())
         {
           unsigned long now = millis();
-          if (1000 < now - last_mqtt_report_)
+          if (MQTT_LDR_PUBLISH_INTERVAL < now - last_mqtt_report_)
           {
             last_mqtt_report_ = now;
             float sensorValue = display_->getRawSensorValue();
-            char charVal[10];                
+            char charVal[10];
             dtostrf(sensorValue, 4, 3, charVal);
             DLOGLN(sensorValue);
-            mqtt_client_.publish(mqtt_topic_prefix_ + "/status/ldr", charVal);
+            mqtt_client_.publish(
+                mqtt_topic_prefix_ + "/sensor/ldr",
+                charVal, true /* retained */, 0 /* QoS */);
           }
         }
         else
@@ -511,18 +516,18 @@ void Iot::loop()
 Iot *iot_sntp_global = nullptr;
 void time_sync_notification_cb(struct timeval *tv)
 {
-    DLOGLN("Notification of a time synchronization event");
-    if ( tv->tv_sec > 0 )
-    {
-      time_t now = tv->tv_sec;
-      struct tm timeinfo;
-      localtime_r(&now, &timeinfo);
-      iot_sntp_global->get_rtc()->adjust(
-          DateTime(timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday,
-                   timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
-      DLOG("Interval for sync: ");
-      DLOGLN(sntp_get_sync_interval());
-    }
+  DLOGLN("Notification of a time synchronization event");
+  if (tv->tv_sec > 0)
+  {
+    time_t now = tv->tv_sec;
+    struct tm timeinfo;
+    localtime_r(&now, &timeinfo);
+    iot_sntp_global->get_rtc()->adjust(
+        DateTime(timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday,
+                 timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
+    DLOG("Interval for sync: ");
+    DLOGLN(sntp_get_sync_interval());
+  }
 }
 
 void Iot::maybeSetRTCfromNTP_()
@@ -542,7 +547,8 @@ void Iot::maybeSetRTCfromNTP_()
   int tz = parseNumberValue(timezone_value_, 0, 459, 0);
 
   esp_netif_init();
-  if (sntp_enabled()) {
+  if (sntp_enabled())
+  {
     sntp_stop();
   }
   sntp_setoperatingmode(SNTP_OPMODE_POLL);
@@ -628,7 +634,7 @@ void Iot::handleWifiConnection_()
   DLOGLN("Wifi connected.");
   if (parseBooleanValue(mqtt_enabled_value_))
   {
-    needs_MQTT_connect_ = true;
+    needs_mqtt_connect_ = true;
   }
   maybeSetRTCfromNTP_();
 }
@@ -649,7 +655,15 @@ bool Iot::connectMQTT_()
   }
   DLOGLN("Connected!");
 
-  mqtt_client_.subscribe(mqtt_topic_prefix_ + "/color/set");
+  mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/color/set");
+  mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/switch/set");
+  // Publish initial ON state for the switch.
+  toggleDisplay_("ON");
+  // Publish current color value
+  mqtt_client_.publish(
+      mqtt_topic_prefix_ + "/light/color",
+      rgbToMqttString_(parseColorValue(color_value_, RgbColor(0, 0, 0))), true /* retained */, 0 /* QoS */);
+
   return true;
 }
 
@@ -671,17 +685,64 @@ bool Iot::connectMqttOptions_()
   return result;
 }
 
+bool Iot::mqttStringToRgb_(String payload, RgbColor *color)
+{
+  int tokens[3];
+  int tokenIndex = 0;
+  for (int i = 0; i < 2; i++)
+  {
+    int nextComma = payload.indexOf(",");
+    if (nextComma == -1)
+    {
+      return false;
+    }
+    String sub = payload.substring(0, nextComma);
+    tokens[i] = sub.toInt();
+    payload = payload.substring(nextComma + 1, payload.length());
+  }
+  if (payload.length() > 3)
+  {
+    return false;
+  }
+  tokens[2] = payload.toInt();
+  *color = RgbColor(tokens[0], tokens[1], tokens[2]);
+  return true;
+}
+
 void Iot::mqttMessageReceived_(String &topic, String &payload)
 {
   DLOGLN("Incoming: " + topic + " - " + payload);
-  if (topic == mqtt_topic_prefix_ + "/color/set") 
+  if (topic == mqtt_topic_prefix_ + "/light/color/set")
   {
-    display_->setColor(
-    parseColorValue(payload.c_str(), parseColorValue(color_value_, RgbColor(255, 255, 255))));
-    // Doing this currently reboots the clock, which isn't great.
-    // strncpy(
-      // color_value_, payload.c_str(),
-      // IOT_CONFIG_VALUE_LENGTH);
-    // iot_web_conf_.saveConfig();
+    RgbColor color;
+    if (mqttStringToRgb_(payload, &color))
+    {
+      display_->setColor(color);
+      mqtt_client_.publish(
+          mqtt_topic_prefix_ + "/light/color",
+          rgbToMqttString_(color), true /* retained */, 0 /* QoS */);
+    }
+  }
+  else if (topic == mqtt_topic_prefix_ + "/light/switch/set")
+  {
+    toggleDisplay_(payload);
+  }
+}
+
+void Iot::toggleDisplay_(String payload)
+{
+  if (payload == "ON")
+  {
+    display_->setOn();
+    mqtt_client_.publish(
+        mqtt_topic_prefix_ + "/light/switch",
+        "ON", true /* retained */, 0 /* QoS */);
+  }
+  else if (payload == "OFF")
+  {
+    display_->setOff();
+    mqtt_client_.publish(
+        mqtt_topic_prefix_ + "/light/switch",
+        "OFF", true /* retained */, 0 /* QoS */);
   }
 }

@@ -37,6 +37,11 @@ public:
   // Starts an animation to update the clock to a new time if necessary.
   void updateForTime(int hour, int minute, int second, int animationSpeed = TIME_CHANGE_ANIMATION_SPEED);
 
+  // Used by MQTT Client to switch off and back on without overriding the color.
+  void setOff();
+  void setOn();
+  bool isOn() { return !_off; }
+
 private:
   // Updates pixel color on the display.
   void _update(int animationSpeed = TIME_CHANGE_ANIMATION_SPEED);
@@ -46,6 +51,9 @@ private:
   // of the clockFace.
   ClockFace* _clockFace;
 
+  // Overrides color to #000000 when true.
+  bool _off;
+  
   // Whether the display should show AM/PM information.
   bool _show_ampm = 0;
 
