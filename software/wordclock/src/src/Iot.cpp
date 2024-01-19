@@ -453,6 +453,8 @@ void Iot::setup()
     mqtt_client_.begin(mqtt_server_value_, net_);
     mqtt_client_.onMessage([this](String &topic, String &payload)
                            { mqttMessageReceived_(topic, payload); });
+    String availabilityTopic = mqtt_topic_prefix_ + "/availability";
+    mqtt_client_.setWill(availabilityTopic.c_str(), "offline");
   }
 
   initialized_ = true;
@@ -657,9 +659,11 @@ bool Iot::connectMQTT_()
 
   mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/color/set");
   mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/switch/set");
+  // Update availability.
+  mqtt_client_.publish(mqtt_topic_prefix_ + "/availability", "online", true /* retained */, 0 /* QoS */);
   // Publish initial ON state for the switch.
   toggleDisplay_("ON");
-  // Publish current color value
+  // Publish current color value.
   mqtt_client_.publish(
       mqtt_topic_prefix_ + "/light/color",
       rgbToMqttString_(parseColorValue(color_value_, RgbColor(0, 0, 0))), true /* retained */, 0 /* QoS */);
