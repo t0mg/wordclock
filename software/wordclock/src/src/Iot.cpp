@@ -297,7 +297,7 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
       manual_time_param_("Time", "time", manual_time_value_, IOT_CONFIG_VALUE_LENGTH,
                          "hh:mm:ss", nullptr, "data-type='time' pattern='\\d{1,2}:\\d{1,2}:\\d{1,2}' step='1' data-controlledby='ntp_enabled' data-showon='0'"),
 
-      mqtt_group_("mqtt_group", "MQTT (work in progress)"),
+      mqtt_group_("mqtt_group", "MQTT"),
       mqtt_enabled_param_(
           "Note: when enabled, config updates trigger a reboot", "mqtt_enabled", mqtt_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),

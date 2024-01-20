@@ -7,7 +7,8 @@ This section of the [Wordclock project](../README.md) covers the software runnin
 - Supports English, French, Italian and Dutch clock faces
 - Web interface over WiFi with captive portal for initial WiFi configuration
 - Can use network time (NTP) or manual setting
-- Interface offers various orther options such as display color, lignt sensor sensitivity
+- Interface offers various orther options such as display color, lignt sensor sensitivity, and [OTA firmware update](#ota-update)
+- [MQTT client](#mqtt) to control the clock via home automation platforms such as [Home Assistant](https://www.home-assistant.io/)
 
 ## Demo video
 
@@ -51,8 +52,53 @@ After the firwmare has been flashed over USB once, you can use the OTA feature t
 - If you are using PatformIO, the build file is located in `.pio\build\<environment name>\firmware.bin`.
 - If you are using Arduino IDE, use `Sketch > Export compiled Binary` to export the file.
 
+## MQTT
+
+MQTT is a lightweight publish-subscribe protocol designed for resource-constrained devices and low-bandwidth networks, commonly used in IoT applications. MQTT clients talk via an MQTT broker (see here for [home assistant](https://www.home-assistant.io/integrations/mqtt/) instructions).
+
+The clock's MQTT client can be enabled and configured from the web UI. Note that the clock will reboot after changing any setting if MQTT is enabled.
+
+Topics are prefixed with the name defined as `Clock name` in the web UI settings (but converted to lowercase and with spaces removed). The default prefix is therefore `wordclock`.
+
+### State topics
+- `wordclock/availability` -> either `offline` or `online`
+- `wordclock/sensor/ldr` -> current LDR reading, refreshes every 15 seconds
+- `wordclock/light/color` -> current color (in `r,g,b` format)
+- `wordclock/light/switch` -> current state of the display `ON` or `OFF`
+
+### Command topics
+- `wordclock/light/color/set` -> sets the LED color, payload must be an `r,g,b` formatted string
+- `wordclock/light/switch/set` -> send `ON` or `OFF` to toggle the display (with a fade effect). The previously set color is restored on `ON`.
+
+### Home Assistant configuration
+
+Below is an configuration for Home Assistant using [light](https://www.home-assistant.io/integrations/light.mqtt/) and [sensor](https://www.home-assistant.io/integrations/sensor.mqtt/) MQTT integrations.
+
+```yaml
+mqtt:
+  - light:
+      name: "Wordclock"
+      availability_topic: "wordclock/availability"
+      state_topic: "wordclock/light/switch"
+      command_topic: "wordclock/light/switch/set"
+      rgb_state_topic: "wordclock/light/color"
+      rgb_command_topic: "wordclock/light/color/set"
+      qos: 0
+      optimistic: false
+  - sensor:
+      name: "Light sensor"
+      availability_topic: "wordclock/availability"
+      state_topic: "wordclock/sensor/ldr"
+```
+
+Entities can then be arranged in a dashboard card like this one:
+
+![Home Assistant card](../images/homeassistant.png)
+
+(the icon used for the button is `mdi:apps-box`)
+
 ## Credits
 
-A large part of this source was based on the code from these two projects (both of which were written for the same hardware):
+A large part of this source was based on the code from these two projects (both of which were written for the same hardware) with their explicit permission:
 - https://github.com/e-noyau/wordclock (for the clockface and overall architecture)
 - https://bitbucket.org/gliktaras/word-clock (for the configuration portal)
