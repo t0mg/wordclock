@@ -46,7 +46,7 @@ public:
   void setup();
   void loop();
 
-  float readSensor() { return lightSensor_.reading(); };
+  uint16_t readSensor() { return lightSensor_.readingRaw(); };
   void setSensorSensitivity(int value) { lightSensor_.sensitivity = value; };
   bool hasChanged()
   {

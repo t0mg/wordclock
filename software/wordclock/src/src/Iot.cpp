@@ -485,13 +485,12 @@ void Iot::loop()
           if (MQTT_LDR_PUBLISH_INTERVAL < now - last_mqtt_report_)
           {
             last_mqtt_report_ = now;
-            float sensorValue = display_->getRawSensorValue();
-            char charVal[10];
-            dtostrf(sensorValue, 4, 3, charVal);
+            uint16_t sensorValue = display_->getRawSensorValue();
+            DLOG("LDR value ");
             DLOGLN(sensorValue);
             mqtt_client_.publish(
                 mqtt_topic_prefix_ + "/sensor/ldr",
-                charVal, true /* retained */, 0 /* QoS */);
+                (String)sensorValue, true /* retained */, 0 /* QoS */);
           }
         }
         else

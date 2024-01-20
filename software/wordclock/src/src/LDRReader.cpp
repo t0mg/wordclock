@@ -26,5 +26,14 @@ void LDRReader::loop()
 
 float LDRReader::reading()
 {
+  if (sensitivity == 0)
+  {
+    return 0.;
+  }
   return min(pow(_currentLDR / 4095.0, 1 / (float)sensitivity), 1.0);
+}
+
+uint16_t LDRReader::readingRaw()
+{
+  return analogRead(_pin);
 }

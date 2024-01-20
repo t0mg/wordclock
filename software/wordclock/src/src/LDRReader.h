@@ -20,8 +20,12 @@ public:
   void setup();
   void loop();
 
-  // Returns a value between 0. (no light) and 1. (much lights)
+  // Returns a normalized, dampened value between 0. (no light) and 1. (much lights),
+  // adjusted against sensitivity setting.
   float reading();
+
+  // Returns a value between 0. (no light) and 4096. (much lights).
+  uint16_t readingRaw();
 
   int sensitivity;
 

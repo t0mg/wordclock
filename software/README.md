@@ -65,7 +65,7 @@ Topics are prefixed with the name defined as `Clock name` in the web UI settings
 
 ### State topics
 - `wordclock/availability` -> either `offline` or `online`
-- `wordclock/sensor/ldr` -> current LDR reading, refreshes every 15 seconds
+- `wordclock/sensor/ldr` -> current raw LDR reading (0-4095), refreshes every 15 seconds
 - `wordclock/light/color` -> current color (in `r,g,b` format)
 - `wordclock/light/switch` -> current state of the display `ON` or `OFF`
 
