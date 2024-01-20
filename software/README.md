@@ -49,12 +49,15 @@ You are now ready to compile and flash the `wordclock.ino` sketch.
 
 After the firwmare has been flashed over USB once, you can use the OTA feature to flash further updates: build the new binary file, then open the web portal of your clock, click the `Firmware update` link at the bottom and upload the new `.bin` file.
 
-- If you are using PatformIO, the build file is located in `.pio\build\<environment name>\firmware.bin`.
-- If you are using Arduino IDE, use `Sketch > Export compiled Binary` to export the file.
+- Pre-built releases can be found [here](https://github.com/t0mg/wordclock/releases).
+- If you are building with PatformIO, the build file is located in `.pio\build\<environment name>\firmware.bin`.
+- If you are building with Arduino IDE, use `Sketch > Export compiled Binary` to export the file.
+
+__Warning__: if the `firmware config version` displayed at the very bottom of the web interface changes, your settings will be reset. They should othewise remain.
 
 ## MQTT
 
-MQTT is a lightweight publish-subscribe protocol designed for resource-constrained devices and low-bandwidth networks, commonly used in IoT applications. MQTT clients talk via an MQTT broker (see here for [home assistant](https://www.home-assistant.io/integrations/mqtt/) instructions).
+MQTT is a lightweight publish-subscribe protocol designed for resource-constrained devices and low-bandwidth networks, commonly used in IoT applications. MQTT clients talk via an MQTT broker (see here for [Home Assistant](https://www.home-assistant.io/integrations/mqtt/) instructions).
 
 The clock's MQTT client can be enabled and configured from the web UI. Note that the clock will reboot after changing any setting if MQTT is enabled.
 
@@ -72,7 +75,7 @@ Topics are prefixed with the name defined as `Clock name` in the web UI settings
 
 ### Home Assistant configuration
 
-Below is an configuration for Home Assistant using [light](https://www.home-assistant.io/integrations/light.mqtt/) and [sensor](https://www.home-assistant.io/integrations/sensor.mqtt/) MQTT integrations.
+Below is an example configuration for Home Assistant using [light](https://www.home-assistant.io/integrations/light.mqtt/) and [sensor](https://www.home-assistant.io/integrations/sensor.mqtt/) MQTT integrations.
 
 ```yaml
 mqtt:
