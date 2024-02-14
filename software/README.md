@@ -7,7 +7,7 @@ This section of the [Wordclock project](../README.md) covers the software runnin
 - Supports English, French, Italian and Dutch clock faces
 - Web interface over WiFi with captive portal for initial WiFi configuration
 - Can use network time (NTP) or manual setting
-- Interface offers various orther options such as display color, lignt sensor sensitivity, and [OTA firmware update](#ota-update)
+- Interface offers various orther options such as display color, light sensor sensitivity, and [OTA firmware update](#ota-update)
 - [MQTT client](#mqtt) to control the clock via home automation platforms such as [Home Assistant](https://www.home-assistant.io/)
 
 ## Demo video
