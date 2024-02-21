@@ -41,6 +41,9 @@ public:
   void setOff();
   void setOn();
   bool isOn() { return !_off; }
+  
+  void setMatrix(std::vector<RgbColor> colorValues);
+  void clearMatrix();
 
 private:
   // Updates pixel color on the display.
@@ -53,6 +56,9 @@ private:
 
   // Overrides color to #000000 when true.
   bool _off;
+
+  bool _matrix_mode;
+  std::vector<RgbColor> _matrix_buf;
   
   // Whether the display should show AM/PM information.
   bool _show_ampm = 0;

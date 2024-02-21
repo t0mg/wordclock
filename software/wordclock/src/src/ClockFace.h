@@ -44,12 +44,12 @@ public:
   };
   uint16_t mapMinute(Corners corner);
 
+  // Clear the display.
+  void clearDisplay();
+
 protected:
   // Lights up a segment in the state.
   void updateSegment(int x, int y, int length);
-
-  // Clear the display.
-  void clearDisplay();
 
   // To avoid refreshing to often, this stores the time of the previous UI
   // update. If nothing changed, there will be no interuption of animations.

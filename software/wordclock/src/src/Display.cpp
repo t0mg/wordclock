@@ -3,6 +3,8 @@
 #include "Display.h"
 #include "ClockFace.h"
 
+static const RgbColor black = RgbColor(0x00, 0x00, 0x00);
+
 Display::Display(ClockFace* clockFace, uint8_t pin)
     : _clockFace(clockFace),
       _pixels(ClockFace::pixelCount(), pin),
@@ -19,6 +21,27 @@ void Display::loop()
 {
   if (_bootAnimations.IsAnimating()) {
     _bootAnimations.UpdateAnimations();
+  } else if (_matrix_mode) {
+      if (_matrix_buf.size() >= 110) {
+        _pixels.SetPixelColor(_clockFace->mapMinute(ClockFace::TopLeft), black);
+        _pixels.SetPixelColor(_clockFace->mapMinute(ClockFace::TopRight), black); 
+        _pixels.SetPixelColor(_clockFace->mapMinute(ClockFace::BottomLeft), black); 
+        _pixels.SetPixelColor(_clockFace->mapMinute(ClockFace::BottomRight), black);  
+        DLOGLN("Updating matrix from arbitray color vector");
+        uint16_t indexPixel = 0;
+        for (int j = 0; j < 10; j++) {
+          {
+          for (int i = 0; i < 11; i++)
+            {
+              if (_matrix_buf.size() >= indexPixel) {
+                _pixels.SetPixelColor(_clockFace->map(i, j), _matrix_buf[indexPixel]);
+              }
+              indexPixel++;
+            }
+          }
+        }
+        _matrix_buf.clear();
+      }
   } else {
     _animations.UpdateAnimations();
     if (!_off && _brightnessController.hasChanged())
@@ -61,7 +84,6 @@ void Display::_update(int animationSpeed)
   DLOGLN("Updating display");
 
   _animations.StopAll();
-  static const RgbColor black = RgbColor(0x00, 0x00, 0x00);
 
   // For all the LED animate a change from the current visible state to the new
   // one.
@@ -191,4 +213,15 @@ void Display::runBootAnimation()
     _circleColor = HtmlColor(0x7f0000);
     _bootAnimations.StartAnimation(0, 20, [this](const AnimationParam& param) { _fadeAnimUpdate(param);});
     _bootAnimations.StartAnimation(1, 3000,[this](const AnimationParam& param) { _circleAnimUpdate(param);});
+}
+
+void Display::setMatrix(std::vector<RgbColor> colorValues) {
+  _animations.StopAll();
+  _matrix_mode = true;
+  _clockFace->clearDisplay();
+  _matrix_buf = colorValues;
+}
+
+void Display::clearMatrix() {
+  _matrix_mode = false;
 }

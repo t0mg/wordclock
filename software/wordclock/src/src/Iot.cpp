@@ -3,9 +3,11 @@
 #include <IotWebConfESP32HTTPUpdateServer.h>
 #include "Timezones.h"
 #include "clockfaces.h"
+#include "Palette.h"
 
 #include <NeoPixelBus.h>
 #include <WiFi.h>
+#include <uri/UriBraces.h>
 #include <MQTT.h>
 #include <esp_sntp.h>
 
@@ -443,6 +445,11 @@ void Iot::setup()
                  { handleHttpToRoot_(); });
   web_server_.onNotFound([this]
                          { iot_web_conf_.handleNotFound(); });
+  web_server_.on(UriBraces("/api/matrix/set/{}"), [this]() {
+    String payload = web_server_.pathArg(0);
+    setMatrixFromPayload_(payload);
+    web_server_.send(200, "text/plain", "OK");
+  });
 
   if (parseBooleanValue(mqtt_enabled_value_))
   {
@@ -658,6 +665,9 @@ bool Iot::connectMQTT_()
 
   mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/color/set");
   mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/switch/set");
+  mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/matrix/set");
+  mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/matrix/unset");
+
   // Update availability.
   mqtt_client_.publish(mqtt_topic_prefix_ + "/availability", "online", true /* retained */, 0 /* QoS */);
   // Publish initial ON state for the switch.
@@ -730,6 +740,14 @@ void Iot::mqttMessageReceived_(String &topic, String &payload)
   {
     toggleDisplay_(payload);
   }
+  else if (topic == mqtt_topic_prefix_ + "/light/matrix/set")
+  {
+    setMatrixFromPayload_(payload);
+  }
+  else if (topic == mqtt_topic_prefix_ + "/light/matrix/unset")
+  {
+      display_->clearMatrix();
+  }
 }
 
 void Iot::toggleDisplay_(String payload)
@@ -747,5 +765,14 @@ void Iot::toggleDisplay_(String payload)
     mqtt_client_.publish(
         mqtt_topic_prefix_ + "/light/switch",
         "OFF", true /* retained */, 0 /* QoS */);
+  }
+}
+
+void Iot::setMatrixFromPayload_(String &payload) {
+  if (payload.length() >= 220) {
+    display_->setMatrix(Palette::stringToRgb(payload));
+  } else {
+    DLOG("Matrix payload is too short :");
+    DLOGLN(payload.length());
   }
 }

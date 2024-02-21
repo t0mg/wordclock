@@ -64,6 +64,8 @@ private:
   bool connectMqttOptions_();
   // Handles incoming MQTT messages.
   void mqttMessageReceived_(String &topic, String &payload);
+  // Updates the display with an arbitrary payload.
+  void setMatrixFromPayload_(String &payload);
 
   // Whether IoT configuration was initialized.
   bool initialized_ = false;
@@ -77,7 +79,7 @@ private:
   // Server for OTA firmware update.
   HTTPUpdateServer http_updater_;
   // MQTT client.
-  MQTTClient mqtt_client_;
+  MQTTClient mqtt_client_ = MQTTClient(512);
   // WiFi client (for MQTT).
   WiFiClient net_;
 
