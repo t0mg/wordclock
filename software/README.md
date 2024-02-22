@@ -5,10 +5,10 @@ This section of the [Wordclock project](../README.md) covers the software runnin
 ## Features
 
 - Supports English, French, Italian and Dutch clock faces
-- Web interface over WiFi with captive portal for initial WiFi configuration
+- Web interface over WiFi with captive portal for initial WiFi configuration (see [User's manual](UsersManual.md) for details)
 - Can use network time (NTP) or manual setting
 - Interface offers various orther options such as display color, light sensor sensitivity, and [OTA firmware update](#ota-update)
-- [MQTT client](#mqtt) to control the clock via home automation platforms such as [Home Assistant](https://www.home-assistant.io/)
+- [MQTT client](UsersManual.md#mqtt-client) to control the clock via home automation platforms such as [Home Assistant](https://www.home-assistant.io/)
 
 ## Demo video
 
@@ -16,14 +16,26 @@ This section of the [Wordclock project](../README.md) covers the software runnin
 
 ## Build with PlatformIO
 
-This is the recommended method as it makes it easy to manage dependencies and build for a specific flavor of ESP32. If you do not want to use PlatformIO, see [next section](#build-with-arduino-ide) for detailed instructions.
+This is the recommended method as it makes it easy to manage dependencies and build for a specific flavor of ESP32. If you do not want to use PlatformIO, see [below](#deprecated-build-with-arduino-ide) for detailed instructions.
 
 1. [Install PlatformIO and VS Code](https://docs.platformio.org/en/latest/integration/ide/pioide.html)
 2. Load the project in VS Code (select the folder containing `platformio.ini`)
 3. Verify that the target board in `platformio.ini` matches your ESP32 hardware
 4. Build and upload
 
-## Build with Arduino IDE
+## OTA update
+
+After the firwmare has been flashed over USB once, you can use the OTA feature to flash further updates: build the new binary file, then open the web portal of your clock, click the `Firmware update` link at the bottom and upload the new `.bin` file.
+
+- Pre-built releases can be found [here](https://github.com/t0mg/wordclock/releases).
+- In PatformIO, the build file is located in `.pio\build\<environment name>\firmware.bin`.
+- If you are building with Arduino IDE, use `Sketch > Export compiled Binary` to export the file.
+
+__Warning__: if the `firmware config version` displayed at the very bottom of the web interface changes, your settings will be reset. They should othewise remain.
+
+## [Deprecated] Build with Arduino IDE
+
+_**Note:** this project now relies on PlatformIO features such as board-specific configurations and [binary data embedding](https://docs.platformio.org/en/latest/platforms/espressif32.html#embedding-binary-data), and will therefore **require changes in the code and project files to build with the Arduino IDE**, which is why this section is considered deprecated._
 
 ### Add ESP32 boards
 
@@ -44,61 +56,6 @@ This project relies on several additional libraries that need to be installed in
 - [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) by Michael C. Mille
 
 You are now ready to compile and flash the `wordclock.ino` sketch.
-
-## OTA update
-
-After the firwmare has been flashed over USB once, you can use the OTA feature to flash further updates: build the new binary file, then open the web portal of your clock, click the `Firmware update` link at the bottom and upload the new `.bin` file.
-
-- Pre-built releases can be found [here](https://github.com/t0mg/wordclock/releases).
-- If you are building with PatformIO, the build file is located in `.pio\build\<environment name>\firmware.bin`.
-- If you are building with Arduino IDE, use `Sketch > Export compiled Binary` to export the file.
-
-__Warning__: if the `firmware config version` displayed at the very bottom of the web interface changes, your settings will be reset. They should othewise remain.
-
-## MQTT
-
-MQTT is a lightweight publish-subscribe protocol designed for resource-constrained devices and low-bandwidth networks, commonly used in IoT applications. MQTT clients talk via an MQTT broker (see here for [Home Assistant](https://www.home-assistant.io/integrations/mqtt/) instructions).
-
-The clock's MQTT client can be enabled and configured from the web UI. Note that the clock will reboot after changing any setting if MQTT is enabled.
-
-Topics are prefixed with the name defined as `Clock name` in the web UI settings (but converted to lowercase and with spaces removed). The default prefix is therefore `wordclock`.
-
-### State topics
-- `wordclock/availability` -> either `offline` or `online`
-- `wordclock/sensor/ldr` -> current raw LDR reading (0-4095), refreshes every 15 seconds
-- `wordclock/light/color` -> current color (in `r,g,b` format)
-- `wordclock/light/switch` -> current state of the display `ON` or `OFF`
-
-### Command topics
-- `wordclock/light/color/set` -> sets the LED color, payload must be an `r,g,b` formatted string
-- `wordclock/light/switch/set` -> send `ON` or `OFF` to toggle the display (with a fade effect). The previously set color is restored on `ON`.
-
-### Home Assistant configuration
-
-Below is an example configuration for Home Assistant using [light](https://www.home-assistant.io/integrations/light.mqtt/) and [sensor](https://www.home-assistant.io/integrations/sensor.mqtt/) MQTT integrations.
-
-```yaml
-mqtt:
-  - light:
-      name: "Wordclock"
-      availability_topic: "wordclock/availability"
-      state_topic: "wordclock/light/switch"
-      command_topic: "wordclock/light/switch/set"
-      rgb_state_topic: "wordclock/light/color"
-      rgb_command_topic: "wordclock/light/color/set"
-      qos: 0
-      optimistic: false
-  - sensor:
-      name: "Light sensor"
-      availability_topic: "wordclock/availability"
-      state_topic: "wordclock/sensor/ldr"
-```
-
-Entities can then be arranged in a dashboard card like this one:
-
-![Home Assistant card](../images/homeassistant.png)
-
-(the icon used for the button is `mdi:apps-box`)
 
 ## Credits
 
