@@ -33,12 +33,15 @@
 
 namespace
 {
+  extern const uint8_t test_html_start[] asm("_binary_src_test_html_start");
+  extern const uint8_t test_html_end[] asm("_binary_src_test_html_end");
+
   // An SVG logo for the Word Clock
-  const char LOGO_DATA_URI[] PROGMEM = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 480'%3E%3Cpath d='M0 0h480v480H0z'/%3E%3Cg fill='%23fff'%3E%3Cpath d='M150.692 163.411h-6.563l-11.522-38.242q-.82-2.54-1.836-6.406-1.016-3.867-1.055-4.649-.86 5.157-2.735 11.29L115.81 163.41h-6.563l-15.195-57.109h7.031l9.024 35.273q1.875 7.422 2.734 13.438 1.055-7.148 3.125-13.984l10.234-34.727h7.031l10.742 35.04q1.875 6.054 3.164 13.671.742-5.547 2.813-13.516l8.984-35.195h7.031z' aria-label='W'/%3E%3Cpath d='M268.677 134.718q0 13.711-6.954 21.562-6.914 7.852-19.258 7.852-12.617 0-19.492-7.695-6.835-7.735-6.835-21.797 0-13.945 6.875-21.602 6.875-7.696 19.53-7.696 12.306 0 19.22 7.813t6.914 21.562zm-45.508 0q0 11.602 4.921 17.617 4.961 5.977 14.375 5.977 9.493 0 14.336-5.977t4.844-17.617q0-11.523-4.844-17.46-4.804-5.977-14.258-5.977-9.492 0-14.453 6.015-4.922 5.977-4.922 17.422z' aria-label='O'/%3E%3Cpath d='M154.135 244.514q0 14.14-7.696 21.64-7.656 7.462-22.07 7.462h-15.82v-57.11h17.5q13.32 0 20.703 7.383t7.383 20.625zm-7.032.234q0-11.172-5.625-16.836-5.586-5.664-16.64-5.664h-9.65v45.625h8.087q11.875 0 17.852-5.82 5.976-5.86 5.976-17.305z' aria-label='D'/%3E%3Cpath d='M339.34 139.658v23.75h-6.641v-57.109h15.664q10.508 0 15.508 4.023 5.039 4.024 5.039 12.11 0 11.327-11.484 15.311l15.508 25.664h-7.852l-13.828-23.75zm0-5.703h9.101q7.031 0 10.312-2.773 3.281-2.813 3.281-8.399 0-5.664-3.36-8.164-3.32-2.5-10.702-2.5h-8.633z' aria-label='R'/%3E%3Cpath d='M245.577 219.873q-9.414 0-14.883 6.289-5.43 6.25-5.43 17.148 0 11.211 5.235 17.344 5.273 6.094 15 6.094 5.976 0 13.633-2.149v5.82q-5.938 2.227-14.648 2.227-12.617 0-19.492-7.656-6.836-7.656-6.836-21.758 0-8.828 3.281-15.469 3.32-6.64 9.531-10.234 6.25-3.594 14.688-3.594 8.985 0 15.703 3.282l-2.812 5.703q-6.485-3.047-12.97-3.047z' aria-label='C'/%3E%3Cpath d='M156.44 354.9q0 13.711-6.953 21.562-6.914 7.852-19.258 7.852-12.617 0-19.492-7.696-6.836-7.734-6.836-21.797 0-13.945 6.875-21.602 6.875-7.695 19.531-7.695 12.305 0 19.219 7.813t6.914 21.562zm-45.508 0q0 11.602 4.922 17.617 4.96 5.977 14.375 5.977 9.492 0 14.336-5.977t4.844-17.617q0-11.523-4.844-17.461-4.805-5.977-14.258-5.977-9.492 0-14.453 6.016-4.922 5.977-4.922 17.422z' aria-label='O'/%3E%3Cpath d='M336.73 273.613v-57.109h6.641v51.094h25.195v6.016z' aria-label='L'/%3E%3Cpath d='M373.956 383.337h-7.813l-20.82-27.695-5.976 5.312v22.383h-6.64v-57.109h6.64v28.32l25.898-28.32h7.852l-22.97 24.805z' aria-label='K'/%3E%3Cpath d='M245.577 329.87q-9.414 0-14.883 6.29-5.43 6.25-5.43 17.147 0 11.211 5.235 17.344 5.273 6.094 15 6.094 5.976 0 13.633-2.148v5.82q-5.938 2.226-14.648 2.226-12.617 0-19.492-7.656-6.836-7.656-6.836-21.758 0-8.828 3.281-15.469 3.32-6.64 9.531-10.234 6.25-3.594 14.688-3.594 8.985 0 15.703 3.282l-2.812 5.703q-6.485-3.047-12.97-3.047z' aria-label='C'/%3E%3C/g%3E%3Cg fill='%23fff'%3E%3Ccircle cx='37.785' cy='37.968' r='7.906'/%3E%3Ccircle cx='439.98' cy='38.047' r='7.906'/%3E%3Ccircle cx='37.785' cy='440.74' r='7.906'/%3E%3Ccircle cx='439.98' cy='440.82' r='7.906'/%3E%3C/g%3E%3C/svg%3E";
+  extern const uint8_t logo_svg_start[] asm("_binary_src_logo_svg_start");
+  extern const uint8_t logo_svg_end[] asm("_binary_src_logo_svg_end");
 
   // Custom meta tags to be inserted in the head.
-  const char CUSTOM_HTML_META_START[] = "<meta name=\"theme-color\" content=\"#121212\" />\n<link rel=\"icon\" href=\"";
-  const char CUSTOM_HTML_META_END[] = "\" type=\"image/svg+xml\" />\n";
+  const char CUSTOM_HTML_META[] = "<meta name=\"theme-color\" content=\"#121212\" />\n<link rel=\"icon\" href=\"logo.svg\" type=\"image/svg+xml\" />\n";
 
   // Custom Javascript block that will be added to the header.
   // See customconfig.js for human-readable version.
@@ -49,114 +52,11 @@ var n=a.getAttribute(\"data-showon\");f&&n&&(c.setAttribute(\"data-controlledby\
 f=a.getAttribute(\"data-showon\").split(\"|\"),c=function(){a.parentElement.style.display=0>f.indexOf(b.value+\"\")?\"none\":\"\"};b.addEventListener(\"change\",c);c()});var k=document.querySelector(\"input[type=color]\");k&&(e=function(){document.querySelector(\".logoContainer\").style.backgroundColor=k.value},k.addEventListener(\"input\",e),e());document.body.classList.add(\"ready\")});";
 
   // Custom style added to the style tag.
-  const char CUSTOMHTML_STYLE_INNER[] PROGMEM = "\n\
-body {\
-  color: #eee;\
-  margin: 0;\
-background: #121212;\
-  font: 100% system-ui;}\
-a {\
-  color: #16a1e7;}\
-div {\
-  padding: 0;}\
-.de {\
-  background-color: transparent;}\
-.de input {\
-  background-color: #ffd4a6; }\
-.em {\
-  color: #ffb86d; }\
-body > div > form, body > div > div {\
-  display: none !important; }\
-body > div:has(> form)::after {\
-  content: 'LOADING...';\
-  display: block;\
-  font-size: 1.5em;\
-  text-align: center;\
-  margin-top: 50%;}\
-body.ready > div > form, body.ready > div > div {\
-  display: block !important;}\
-body.ready > div:has(> form)::after {\
-  display: none;}\
-.logo {\
-  width: 80vw;\
-  max-width: 160px;\
-  display: block;\
-  mix-blend-mode: multiply;}\
-.logoContainer {\
-  background: white;\
-  transition: background 3s;\
-  display: inline-block;\
-  margin: 40px auto;\
-  padding: 0;}\
-.logoContainer, fieldset {\
-  box-shadow: 0px 0px 15px 1px #ffffff7d;}\
-.pwtoggle {\
-  padding: 0 5px;\
-  position: absolute;\
-  right: 3px;\
-  top: 40px;\
-  border: none;\
-  background: transparent;\
-  height: 34px;\
-  outline: none;}\
-fieldset {\
-  padding: 40px 15px 20px;\
-  margin-bottom: 40px;\
-  border: none;\
-  background: black;\
-  border-radius: 0;\
-  position: relative;\
-  width: calc(100vw - 100px);\
-  max-width: 440px;}\
-fieldset > div {\
-  position: relative;\
-  margin: 0;\
-  padding: 0;\
-  display: flex;\
-  flex-direction: column;}\
-input, select {\
-  margin: 0;\
-  padding: 5px;\
-  width: auto;\
-  line-height: 20px;\
-  border: none;}\
-input[type=\"range\"] {\
-  margin-left: 30px;\
-  position: relative;\
-  padding: 0;}\
-input[type=\"range\"]:before {\
-  content: attr(data-label);\
-  color: #eee;\
-  position: absolute;\
-  left: -30px;\
-  display: inline;\
-  width: 25px;\
-  line-height: 20px;}\
-label {margin: 15px 0 5px;}\
-legend, fieldset:first-child:after {\
-  font-weight: lighter;\
-  padding: 0;\
-  font-size: 1.2em;\
-  text-align: center;\
-  position: absolute;\
-  top: 15px;\
-  display: block;\
-  left: 0;\
-  right: 0;\
-  text-transform: uppercase;}\
-fieldset:first-child:after {content: \"Network\";}\
-button {\
-  border-radius: 0;\
-  text-transform: uppercase;}\
-form + div {padding: 20px 0 15px 0;}\
-body > div > div:last-child {\
-  margin-top: -20px;\
-  float: right;}\
-\n";
+  extern const uint8_t style_css_start[] asm("_binary_src_style_css_start");
+  extern const uint8_t style_css_end[] asm("_binary_src_style_css_end");
 
   // Custom HTML element will be added at the beginning of the body element.
-  const char CUSTOMHTML_BODY_INNER_START[] PROGMEM = "<header><div class=\"logoContainer\"><img class=\"logo\" src=\"";
-  const char CUSTOMHTML_BODY_INNER_END[] PROGMEM = "\"/></div></header>\n";
+  const char CUSTOMHTML_BODY_INNER[] PROGMEM = "<header><div class=\"logoContainer\"><img class=\"logo\" src=\"logo.svg\"/></div></header>\n";
 
   class CustomHtmlFormatProvider : public iotwebconf::HtmlFormatProvider
   {
@@ -165,26 +65,22 @@ body > div > div:last-child {\
     {
       String head = iotwebconf::HtmlFormatProvider::getHead();
       head.replace("{v}", THING_NAME);
-      return head + String(FPSTR(CUSTOM_HTML_META_START)) +
-             String(FPSTR(LOGO_DATA_URI)) +
-             String(FPSTR(CUSTOM_HTML_META_END));
+      return head + String(FPSTR(CUSTOM_HTML_META));
     }
     String getScriptInner() override
     {
       return iotwebconf::HtmlFormatProvider::getScriptInner() +
-             String(FPSTR(CUSTOMHTML_SCRIPT_INNER));
+            String(FPSTR(CUSTOMHTML_SCRIPT_INNER));
     }
     String getStyleInner() override
     {
       return iotwebconf::HtmlFormatProvider::getStyleInner() +
-             String(FPSTR(CUSTOMHTML_STYLE_INNER));
+            String((char *) + style_css_start);
     }
     String getBodyInner() override
     {
-      return String(FPSTR(CUSTOMHTML_BODY_INNER_START)) +
-             String(FPSTR(LOGO_DATA_URI)) +
-             String(FPSTR(CUSTOMHTML_BODY_INNER_END)) +
-             iotwebconf::HtmlFormatProvider::getBodyInner();
+      return String(FPSTR(CUSTOMHTML_BODY_INNER)) +
+            iotwebconf::HtmlFormatProvider::getBodyInner();
     }
   };
   // An instance must be created from the class defined above.
@@ -449,6 +345,12 @@ void Iot::setup()
     String payload = web_server_.pathArg(0);
     setMatrixFromPayload_(payload);
     web_server_.send(200, "text/plain", "OK");
+  });
+  web_server_.on("/logo.svg", [this]() {
+    web_server_.send(200, "image/svg+xml", (char *)logo_svg_start);
+  });
+  web_server_.on("/test", [this]() {
+    web_server_.send(200, "text/html", (char *)test_html_start);
   });
 
   if (parseBooleanValue(mqtt_enabled_value_))
