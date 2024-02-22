@@ -1,4 +1,4 @@
-# WordClock User Manual
+# WordClock User's Manual
 
 ## First time use
 
@@ -6,40 +6,40 @@ When you are powering the device for the first time after flashing the firmware,
 
 Use your smartphone (or tablet, or computer) to detect the WiFi network, and connect to it by using the password `password`.
 
-After a successful WiFi connection, a configuration page should show up in your web browser (there might be a notification to tap).
-
-Note that at this point even if your home network is not configured, the clock is already useable in an offline manner.
-
 ## Configuration page (Config portal)
 
-After you have connected to the access point created by the device (as described above), you need to enter the configuration page on your web browser.
+After a successful connection to the Access Point, a configuration page should show up in your web browser (there might be a notification to tap).
+
+It should look a bit like that:
 
 <p align="center">
   <img src="../images/webui.png" width="200">
 </p>
 
-__Note:__ The NETWORK section will show at the top if it has not been configured before, and will afterwards move to the bottom (as shown in the screenshot above) since it probably doesn't need to change it very often.
+__Note:__ At this point even if your home network is not configured, the clock is already useable in an offline manner, especially if you have a battery cell and RTC module.
 
 Except for password fields, you will see the item values previously set (or for first time setup, the factory default).
 
-On password fields you will never see any previously set values, and typed values are also hidden. You can __reveal the password__ you have typed by clicking the 👁️. You can then double-click (double-tap) a second time to hide the text again. It is recommended to hide the passwords before submitting the configuration form, as browsers are likely to save non-password form values to use them as recommendation.
+### password fields
 
-Some fields are protected with constraints, and a validation is performed. In case there is an error in the validation of any field, none of them are saved and a red message should appear next to the field that had a validation error. You will need need to re-type values for filled-out passwords in this case.
+On password fields you will never see any previously set values. You can __reveal a password__ you just entered by clicking the 👁️ (eye emoji). You can then click a second time to hide the text, which is recommended before submitting the configuration form, as browsers might save clear text values to use them as suggestions.
+
+Some fields are protected with constraints, and a validation check is performed. In case there is an error in the validation of any field, nothing is saved and a red message should appear next to the field that caused an error. You will need need to re-enter values for filled-out passwords in this case.
 
 ## Configuration options
 
-After the first boot, there are some values needs to be set up.
-These items are maked with __*__ (star) in the list below.
-
-You can set up the following values in the configuration page:
+Here are the available configuration options.
 
 ### Network
--  __Clock name *__ - defaults to `WordClock`. It will show up as SSID in Access Point mode (brifely at the beginning of every boot sequence, or if the clock is unable to connect to the configured WiFi network). You shouldn't need to change it unless you are planning to set up multiple clocks and/or use MQTT as it is also used in MQTT topics.
-- __AP password *__ - this password must be at least 8, at most 32 characters. **DO NOT LOSE IT** or you will need to reflash your clock. The default value is `password`. It is used in 2 situations: 
+
+The NETWORK section will show at the top of the page if it has not been configured before, and will afterwards move to the bottom (as shown in the screenshot above) since it probably doesn't need to change it very often.
+
+-  __Clock name__ - defaults to `WordClock`. It will show up as SSID in Access Point mode (brifely at the beginning of every boot sequence, or if the clock is unable to connect to the configured WiFi network). You shouldn't need to change it unless you are planning to set up multiple clocks and/or use MQTT as it is also used in MQTT topics.
+- __AP password__ - this password must be at least 8, at most 32 characters. **DO NOT LOSE IT** or you will need to reflash your clock. The default value is `password`. It is used in 2 situations: 
   - it's the password to the Access Point network created by the clock during intitial setup and subsequent boot sequences. The UI is forcing you to change it at this point, but you can still set it to the same default value if you want.
   - it's also the password to the clock's web interface once it is connected to your home WiFi and you type its IP in a browser (the login to this interface is always `admin`). 
-- __WiFi SSID *__ - The name of the WiFi network you want the clock to connect to.
-- __WiFi password *__ - The password of the network above. Note that it is required: open networks are not supported.
+- __WiFi SSID__ - The name of the WiFi network you want the clock to connect to.
+- __WiFi password__ - The password of the network above. Note that it is required: open networks are not supported.
 
 ### Display
 
@@ -57,22 +57,22 @@ You can enable the MQTT client and configure your server's adress, login and pas
 
 ## Connecting to a WiFi network
 
-When you have successfully applied the mandatory configurations, the device will try to connect to the required WiFi network.
+When you have successfully set the WiFi configuration fields, the device will try to connect to it.
 
-If the WiFi connection fails, the device will __fall back to Access Point
-mode__. This means that the device will form its own WiFi network again, to which you can connect to and try to correct the network setup. This time you will see the __Clock name__ value as the access point name (SSID) - `WordClock` if you haven't changed it, and you need to use the __AP password__ that you should have configured previously.
+If the connection fails, the device will __fall back to Access Point
+mode__. This means that the device will form its own WiFi network again, to which you can connect to and try to correct the network setup. This time you will see the __Clock name__ value as the access point name (SSID) - `WordClock` if you haven't changed it - and you need to use the __AP password__ that you should have configured previously.
 
-Note that if such a case where the configured WiFi network is not available, the device will fall back to Access Point mode only for a few seconds as it will periodically __retry connecting to the WiFi network__. After all, maybe your configuration was OK and it's your WiFi that was down 🙂.
+Note that in such a case where the configured WiFi network is not connecting, the device will fall back to Access Point mode only for a few seconds as it will periodically __retry connecting to it__. After all, maybe your configuration was OK and it's your WiFi that was down 🙂.
 
 Once you connect in Access Point mode, it will be kept running as long as any device is connected to it. You'll need to disconnect your device from it for the clock to continue its operation (ie reboot).
 
 ## Configuration in connected mode
 
-After the clock successfully connected to the configured WiFi network, the temporary Access Point is terminated, but you can still connect to the clock using its IP address. 
+After the clock successfully connects to the configured WiFi network, the temporary Access Point is terminated, but you can still access the clock using its IP address.
 
-To determine the IP address of your clock, you might want to consult with your WiFi router (it might also be possible to use a local domain such as `wordclock.lan`, `wordclock.home` or `wordclock.local`, but this depends on your router configuration so your mileage may vary)
+To determine the IP address of your clock, you might want to consult with your WiFi router (it might also be possible to use a local domain such as `wordclock.lan`, `wordclock.home` or `wordclock.local`, but this mostly depends on your router so your mileage may vary).
 
-When you want to access the Config Portal of the device __via a WiFi network__ from your web browser, a login page will be displayed, where you need to enter:
+When you want to access the Config Portal of the clock __via a home WiFi network__ from your web browser, a login prompt will be displayed, where you need to enter:
 - User name: `admin`
 - Password: the password you have set up previously as __AP Password__ (`password` if you kept the default value).
 
