@@ -4,7 +4,7 @@
 
 When you are powering the device for the first time after flashing the firmware, it will create its own WiFi Access Point with SSID `WordClock`.
 
-Use your smartphone (or tablet, or computer) to detect the WiFi network, and connect to it by using the password `password`.
+Use your smartphone (or tablet, or computer) to detect the WiFi network, and connect to it by using the password `password` (or `12345678` in the old 1.0 firmware).
 
 ## Configuration page (Config portal)
 
