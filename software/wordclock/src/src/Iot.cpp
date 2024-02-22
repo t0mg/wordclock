@@ -33,23 +33,20 @@
 
 namespace
 {
-  extern const uint8_t test_html_start[] asm("_binary_src_test_html_start");
-  extern const uint8_t test_html_end[] asm("_binary_src_test_html_end");
-
-  // An SVG logo for the Word Clock
+  // An SVG logo for the WordClock.
   extern const uint8_t logo_svg_start[] asm("_binary_src_logo_svg_start");
   extern const uint8_t logo_svg_end[] asm("_binary_src_logo_svg_end");
+
+  // Matrix paint webpage.
+  extern const uint8_t paint_html_start[] asm("_binary_src_paint_html_start");
+  extern const uint8_t paint_html_end[] asm("_binary_src_paint_html_end");
 
   // Custom meta tags to be inserted in the head.
   const char CUSTOM_HTML_META[] = "<meta name=\"theme-color\" content=\"#121212\" />\n<link rel=\"icon\" href=\"logo.svg\" type=\"image/svg+xml\" />\n";
 
   // Custom Javascript block that will be added to the header.
-  // See customconfig.js for human-readable version.
-  const char CUSTOMHTML_SCRIPT_INNER[] PROGMEM = "document.addEventListener(\"DOMContentLoaded\",function(e){document.getElementById(\"iwcWifiSsid\")?.value&&(e=document.getElementById(\"iwcSys\"),e.parentElement.removeChild(e),document.querySelector(\"form\").insertBefore(e,document.querySelector(\"button[type=submit]\")));document.querySelectorAll(\"[data-type]\").forEach(function(a){a.type=a.getAttribute(\"data-type\")});document.querySelectorAll(\"input[type=password]\").forEach(function(a){var b=document.createElement(\"input\");b.classList.add(\"pwtoggle\");b.type=\
-\"button\";b.value=\"\\ud83d\\udc41\\ufe0f\";a.insertAdjacentElement(\"afterend\",b);b.onclick=function(){\"password\"===a.type?(a.type=\"text\",b.value=\"\\ud83d\\udd12\"):(a.type=\"password\",b.value=\"\\ud83d\\udc41\\ufe0f\")}});(e=document.querySelector(\"form\"))&&e.addEventListener(\"submit\",function(){var a=document.querySelector(\"button[type=submit]\");a.innerText=\"Saving...\";a.toggleAttribute(\"disabled\",!0)});document.querySelectorAll(\"input[data-options]\").forEach(function(a){var b=a.value,f=a.getAttribute(\"data-options\").split(\"|\"),\
-c=document.createElement(\"select\");c.name=a.name;c.id=a.id;\"\"===b&&c.appendChild(document.createElement(\"option\"));var d=null;f.forEach(function(l,m){var g=l.split(\"/\"),h=l;1<g.length?(h=g.splice(0,1)[0],d&&h==d.label||(d&&c.appendChild(d),d=document.createElement(\"optgroup\"),d.label=h),h=g.join(\" / \")):d&&(c.appendChild(d),d=null);g=document.createElement(\"option\");g.value=m;g.innerText=h;m==b&&g.toggleAttribute(\"selected\");d?d.appendChild(g):c.appendChild(g)});d&&c.appendChild(d);a.id+=\"-d\";f=a.getAttribute(\"data-controlledby\");\
-var n=a.getAttribute(\"data-showon\");f&&n&&(c.setAttribute(\"data-controlledby\",f),c.setAttribute(\"data-showon\",n));a.insertAdjacentElement(\"beforebegin\",c);a.parentElement.removeChild(a)});document.querySelectorAll(\"input[type=range]\").forEach(function(a){var b=a.getAttribute(\"data-labels\"),f=b&&b.split(\"|\");b=function(){a.setAttribute(\"data-label\",f?f[parseInt(a.value,10)]||a.value:a.value)};a.oninput=b;b()});document.querySelectorAll(\"[data-controlledby]\").forEach(function(a){var b=document.getElementById(a.getAttribute(\"data-controlledby\")),\
-f=a.getAttribute(\"data-showon\").split(\"|\"),c=function(){a.parentElement.style.display=0>f.indexOf(b.value+\"\")?\"none\":\"\"};b.addEventListener(\"change\",c);c()});var k=document.querySelector(\"input[type=color]\");k&&(e=function(){document.querySelector(\".logoContainer\").style.backgroundColor=k.value},k.addEventListener(\"input\",e),e());document.body.classList.add(\"ready\")});";
+  extern const uint8_t customscript_js_start[] asm("_binary_src_customscript_js_start");
+  extern const uint8_t customscript_js_end[] asm("_binary_src_customscript_js_end");
 
   // Custom style added to the style tag.
   extern const uint8_t style_css_start[] asm("_binary_src_style_css_start");
@@ -70,12 +67,12 @@ f=a.getAttribute(\"data-showon\").split(\"|\"),c=function(){a.parentElement.styl
     String getScriptInner() override
     {
       return iotwebconf::HtmlFormatProvider::getScriptInner() +
-            String(FPSTR(CUSTOMHTML_SCRIPT_INNER));
+            String((char *)customscript_js_start);
     }
     String getStyleInner() override
     {
       return iotwebconf::HtmlFormatProvider::getStyleInner() +
-            String((char *) + style_css_start);
+            String((char *)style_css_start);
     }
     String getBodyInner() override
     {
@@ -349,8 +346,8 @@ void Iot::setup()
   web_server_.on("/logo.svg", [this]() {
     web_server_.send(200, "image/svg+xml", (char *)logo_svg_start);
   });
-  web_server_.on("/test", [this]() {
-    web_server_.send(200, "text/html", (char *)test_html_start);
+  web_server_.on("/paint", [this]() {
+    web_server_.send(200, "text/html", (char *)paint_html_start);
   });
 
   if (parseBooleanValue(mqtt_enabled_value_))

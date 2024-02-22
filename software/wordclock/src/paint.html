@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+  <meta charset='UTF-8'>
+  <title>Matrix painter</title>
+  <meta name="robots" content="noindex">
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <meta name="theme-color" content="#121212">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+
+  <style>
+    body,
+    section {
+      background: black;
+      color: #eee;
+      font: 100% system-ui;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .tools {
+      display: flex;
+      width: 100%;
+    }
+
+    .tools button {
+      margin: 4px;
+      border: 0;
+      border-radius: 0.3rem;
+      background-color: #16A1E7;
+      color: #fff;
+      font-size: 1.2rem;
+      width: 100%;
+    }
+
+    section {
+      flex-direction: column;
+      margin: 1rem;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    textarea {
+      margin: 1rem;
+      width: 100%;
+      height: 100px;
+      width: 400px;
+      background: #111;
+      color: #aaa;
+      font-family: monospace;
+    }
+
+    canvas {
+      border: 1px black solid;
+      display: block;
+      margin: 1rem;
+      width: 400px;
+      height: 400px;
+      image-rendering: pixelated;
+      box-shadow: 0px 0px 15px 1px #ffffff7d;
+    }
+
+    input[type="color"] {
+      margin: 0;
+      border: 0;
+      width: 100%;
+      height: 40px;
+      padding: 0;
+      background: none;
+    }
+
+    .palette {
+      display: flex;
+      width: 320px;
+      flex-wrap: wrap;
+    }
+
+    .palette button {
+      border: none;
+      width: 20px;
+      height: 20px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <canvas width="11" height="10"></canvas>
+  <section>
+    <div class="tools">
+      <input type="color" disabled>
+      <button id="clear">clear</button>
+    </div>
+    <div class="palette"></div>
+  </section>
+  <section>
+    <p>MQTT payload</p>
+    <textarea></textarea>
+  </section>
+
+  <script type="text/javascript">
+    const paintCanvas = document.querySelector("canvas");
+    const context = paintCanvas.getContext("2d");
+    const colorPicker = document.querySelector("input[type='color']");
+    context.fillRect(0, 0, 11, 10);
+
+    let x = 0,
+      y = 0;
+    let isMouseDown = false;
+
+    const stopDrawing = () => {
+      isMouseDown = false;
+    };
+    const startDrawing = (event) => {
+      isMouseDown = true;
+      drawLine(event);
+    };
+    const drawLine = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const rect = event.target.getBoundingClientRect();
+      const evtx = event.targetTouches
+        ? event.targetTouches[0].clientX - rect.left
+        : event.offsetX;
+      const evty = event.targetTouches
+        ? event.targetTouches[0].clientY - rect.top
+        : event.offsetY;
+      if (isMouseDown) {
+        const newX = Math.floor((evtx / paintCanvas.clientWidth) * 11);
+        const newY = Math.floor((evty / paintCanvas.clientHeight) * 10);
+        context.fillRect(newX, newY, 1, 1);
+        x = newX;
+        y = newY;
+        updateText();
+      }
+    };
+
+    const rgbToHexString = (data) => {
+      const r = data[0];
+      const g = data[1];
+      const b = data[2];
+      if (r > 255 || g > 255 || b > 255) throw "Invalid color component";
+      const val = ((r << 16) | (g << 8) | b).toString(16);
+      return ("000000" + val).slice(-6);
+    };
+
+    const textarea = document.querySelector("textarea");
+
+    let debounce;
+    const updateText = () => {
+      let str = "";
+      for (let y = 0; y < 10; y++) {
+        for (let x = 0; x < 11; x++) {
+          let p = context.getImageData(x, y, 1, 1).data;
+          str += ("00" + palette.indexOf(rgbToHexString(p)).toString(16)).slice(-2);
+        }
+      }
+      const prevVal = textarea.value;
+      if (prevVal != str) {
+        textarea.value = str;
+        if (debounce) {
+          clearTimeout(debounce);
+        }
+        debounce = setTimeout(() => {
+          console.log("update");
+          fetch("/api/matrix/set/" + str);
+        }, 30);
+      }
+    };
+
+    document.getElementById("clear").onclick = () => {
+      const style = context.fillStyle;
+      context.fillStyle = "#000000";
+      context.fillRect(0, 0, 11, 10);
+      updateText();
+      context.fillStyle = style;
+    };
+
+    paintCanvas.addEventListener("mousedown", startDrawing);
+    paintCanvas.addEventListener("touchstart", startDrawing);
+    paintCanvas.addEventListener("mousemove", drawLine);
+    paintCanvas.addEventListener("touchmove", drawLine);
+    paintCanvas.addEventListener("mouseup", stopDrawing);
+    paintCanvas.addEventListener("mouseout", stopDrawing);
+    paintCanvas.addEventListener("touchend", stopDrawing);
+
+    const palette = [
+      "000000","0b0b0b","222222","444444","555555","777777","888888",
+      "aaaaaa","bbbbbb","dddddd","eeeeee","00000b","000022","000044",
+      "000055","000077","000088","0000aa","0000bb","0000dd","0000ee",
+      "000b00","002200","004400","005500","007700","008800","00aa00",
+      "00bb00","00dd00","00ee00","0b0000","220000","440000","550000",
+      "770000","880000","aa0000","bb0000","dd0000","ee0000","000033",
+      "000066","000099","0000cc","0000ff","003300","003333","003366",
+      "003399","0033cc","0033ff","006600","006633","006666","006699",
+      "0066cc","0066ff","009900","009933","009966","009999","0099cc",
+      "0099ff","00cc00","00cc33","00cc66","00cc99","00cccc","00ccff",
+      "00ff00","00ff33","00ff66","00ff99","00ffcc","00ffff","330000",
+      "330033","330066","330099","3300cc","3300ff","333300","333333",
+      "333366","333399","3333cc","3333ff","336600","336633","336666",
+      "336699","3366cc","3366ff","339900","339933","339966","339999",
+      "3399cc","3399ff","33cc00","33cc33","33cc66","33cc99","33cccc",
+      "33ccff","33ff00","33ff33","33ff66","33ff99","33ffcc","33ffff",
+      "660000","660033","660066","660099","6600cc","6600ff","663300",
+      "663333","663366","663399","6633cc","6633ff","666600","666633",
+      "666666","666699","6666cc","6666ff","669900","669933","669966",
+      "669999","6699cc","6699ff","66cc00","66cc33","66cc66","66cc99",
+      "66cccc","66ccff","66ff00","66ff33","66ff66","66ff99","66ffcc",
+      "66ffff","990000","990033","990066","990099","9900cc","9900ff",
+      "993300","993333","993366","993399","9933cc","9933ff","996600",
+      "996633","996666","996699","9966cc","9966ff","999900","999933",
+      "999966","999999","9999cc","9999ff","99cc00","99cc33","99cc66",
+      "99cc99","99cccc","99ccff","99ff00","99ff33","99ff66","99ff99",
+      "99ffcc","99ffff","cc0000","cc0033","cc0066","cc0099","cc00cc",
+      "cc00ff","cc3300","cc3333","cc3366","cc3399","cc33cc","cc33ff",
+      "cc6600","cc6633","cc6666","cc6699","cc66cc","cc66ff","cc9900",
+      "cc9933","cc9966","cc9999","cc99cc","cc99ff","cccc00","cccc33",
+      "cccc66","cccc99","cccccc","ccccff","ccff00","ccff33","ccff66",
+      "ccff99","ccffcc","ccffff","ff0000","ff0033","ff0066","ff0099",
+      "ff00cc","ff00ff","ff3300","ff3333","ff3366","ff3399","ff33cc",
+      "ff33ff","ff6600","ff6633","ff6666","ff6699","ff66cc","ff66ff",
+      "ff9900","ff9933","ff9966","ff9999","ff99cc","ff99ff","ffcc00",
+      "ffcc33","ffcc66","ffcc99","ffcccc","ffccff","ffff00","ffff33",
+      "ffff66","ffff99","ffffcc","ffffff"
+    ];
+
+    const pdiv = document.querySelector(".palette");
+    palette.forEach((color) => {
+      const b = document.createElement("button");
+      b.style.backgroundColor = `#${color}`;
+      b.onclick = () => {
+        colorPicker.value = `#${color}`;
+        context.fillStyle = `#${color}`;
+      };
+      pdiv.appendChild(b);
+    });
+
+  </script>
+</body>
+
+</html>

@@ -7,7 +7,7 @@ This section of the [Wordclock project](../README.md) covers the software runnin
 - Supports English, French, Italian and Dutch clock faces
 - Web interface over WiFi with captive portal for initial WiFi configuration (see [User's manual](UsersManual.md) for details)
 - Can use network time (NTP) or manual setting
-- Interface offers various orther options such as display color, light sensor sensitivity, and [OTA firmware update](#ota-update)
+- Interface offers various other options such as display color, light sensor sensitivity, and [OTA firmware update](#ota-update)
 - [MQTT client](UsersManual.md#mqtt-client) to control the clock via home automation platforms such as [Home Assistant](https://www.home-assistant.io/)
 
 ## Demo video
@@ -54,6 +54,7 @@ This project relies on several additional libraries that need to be installed in
 - [RTClib](https://github.com/adafruit/RTClib) by Adafruit
 - [IotWebConf](https://github.com/prampec/IotWebConf) by Balazs Kelemen
 - [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) by Michael C. Mille
+- [arduino-mqtt](https://github.com/256dpi/arduino-mqtt) by Joël Gähwiler
 
 You are now ready to compile and flash the `wordclock.ino` sketch.
 

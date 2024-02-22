@@ -1,0 +1,214 @@
+.de {
+  background-color: #ffaaaa;
+}
+
+.em {
+  font-size: 0.8em;
+  color: #bb0000;
+  padding-bottom: 0px;
+}
+
+.c {
+  text-align: center;
+}
+
+div,
+input,
+select {
+  padding: 5px;
+  font-size: 1em;
+}
+
+input {
+  width: 95%;
+}
+
+select {
+  width: 100%
+}
+
+input[type=checkbox] {
+  width: auto;
+  scale: 1.5;
+  margin: 10px;
+}
+
+body {
+  text-align: center;
+  font-family: verdana;
+}
+
+button {
+  border: 0;
+  border-radius: 0.3rem;
+  background-color: #16A1E7;
+  color: #fff;
+  line-height: 2.4rem;
+  font-size: 1.2rem;
+  width: 100%;
+}
+
+fieldset {
+  border-radius: 0.3rem;
+  margin: 0px;
+}
+
+body {
+  color: #eee;
+  margin: 0;
+  background: #121212;
+  font: 100% system-ui;
+}
+
+a {
+  color: #16a1e7;
+}
+
+div {
+  padding: 0;
+}
+
+.de {
+  background-color: transparent;
+}
+
+.de input {
+  background-color: #ffd4a6;
+}
+
+.em {
+  color: #ffb86d;
+}
+
+body>div>form,
+body>div>div {
+  display: none !important;
+}
+
+body>div:has(> form)::after {
+  content: 'LOADING...';
+  display: block;
+  font-size: 1.5em;
+  text-align: center;
+  margin-top: 50%;
+}
+
+body.ready>div>form,
+body.ready>div>div {
+  display: block !important;
+}
+
+body.ready>div:has(> form)::after {
+  display: none;
+}
+
+.logo {
+  width: 80vw;
+  max-width: 160px;
+  display: block;
+  mix-blend-mode: multiply;
+}
+
+.logoContainer {
+  background: white;
+  transition: background 3s;
+  display: inline-block;
+  margin: 40px auto;
+  padding: 0;
+}
+
+.logoContainer,
+fieldset {
+  box-shadow: 0px 0px 15px 1px #ffffff7d;
+}
+
+.pwtoggle {
+  padding: 0 5px;
+  position: absolute;
+  right: 3px;
+  top: 40px;
+  border: none;
+  background: transparent;
+  height: 34px;
+  outline: none;
+}
+
+fieldset {
+  padding: 40px 15px 20px;
+  margin-bottom: 40px;
+  border: none;
+  background: black;
+  border-radius: 0;
+  position: relative;
+  width: calc(100vw - 100px);
+  max-width: 440px;
+}
+
+fieldset>div {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+input,
+select {
+  margin: 0;
+  padding: 5px;
+  width: auto;
+  line-height: 20px;
+  border: none;
+}
+
+input[type="range"] {
+  margin-left: 30px;
+  position: relative;
+  padding: 0;
+}
+
+input[type="range"]:before {
+  content: attr(data-label);
+  color: #eee;
+  position: absolute;
+  left: -30px;
+  display: inline;
+  width: 25px;
+  line-height: 20px;
+}
+
+label {
+  margin: 15px 0 5px;
+}
+
+legend,
+fieldset:first-child:after {
+  font-weight: lighter;
+  padding: 0;
+  font-size: 1.2em;
+  text-align: center;
+  position: absolute;
+  top: 15px;
+  display: block;
+  left: 0;
+  right: 0;
+  text-transform: uppercase;
+}
+
+fieldset:first-child:after {
+  content: "Network";
+}
+
+button {
+  border-radius: 0;
+  text-transform: uppercase;
+}
+
+form+div {
+  padding: 20px 0 15px 0;
+}
+
+body>div>div:last-child {
+  margin-top: -20px;
+  float: right;
+}
