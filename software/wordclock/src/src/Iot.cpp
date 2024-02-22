@@ -14,7 +14,7 @@
 // Name of this IoT object.
 #define THING_NAME "WordClock"
 // Initial WiFi access point password.
-#define INITIAL_WIFI_AP_PASSWORD "12345678"
+#define INITIAL_WIFI_AP_PASSWORD "password"
 // IoT configuration version. Change this whenever IotWebConf object's
 // configuration structure changes.
 #define CONFIG_VERSION "5"
