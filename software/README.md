@@ -16,9 +16,7 @@ For detailed usage instructions, please refer to the [User's Manual](UsersManual
 
 ## Demo video
 
-Here's an outdated video that still shows the Wordclock and its web interface in action.
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/WF_X5soabm0?si=1muYJChQ63m8lSHF" title="YouTube video player" frameborder="0" allow="clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>
+[Here's a video](https://youtu.be/WF_X5soabm0) showing the Wordclock with 1.0 firmware and its web interface in action. New features were added since, such as MQTT and Paint.
 
 ## Build with PlatformIO
 

@@ -20,7 +20,7 @@ __Note:__ At this point even if your home network is not configured, the clock i
 
 Except for password fields, you will see the item values previously set (or for first time setup, the factory default).
 
-### password fields
+### Password fields
 
 On password fields you will never see any previously set values. You can __reveal a password__ you just entered by clicking the 👁️ (eye emoji). You can then click a second time to hide the text, which is recommended before submitting the configuration form, as browsers might save clear text values to use them as suggestions.
 
@@ -169,53 +169,52 @@ To keep thing simple, the system works with 16 preset colors based on the origin
 
 <table style="border: none;">
 <tbody><tr>
-<td style="color:black; background:#fff;">0 — white
-</td>
-<td style="color:white; background:#1fb714;">8 — green
-</td></tr>
+  <td style="color:black; background:#fff;">0 — white
+  </td>
+  <td style="color:black; background:#fbf305;">1 — yellow
+  </td>
+  <td style="color:black; background:#ff6403;">2 — orange
+  </td>
+  <td style="background:#dd0907;">3 — red
+  </td>
+  <td style="color:white; background:#f20884;">4 — magenta
+  </td>
+  <td style="background:#4700a5;">5 — purple
+  </td>
+  <td style="background:#0000d3;">6 — blue
+  </td>
+  <td style="color:black; background:#02abea;">7 — cyan
+  </td>
+</tr>
 <tr>
-<td style="color:black; background:#fbf305;">1 — yellow
-</td>
-<td style="color:white; background:#006412;">9 — dark green
-</td></tr>
-<tr>
-<td style="color:black; background:#ff6403;">2 — orange
-</td>
-<td style="color:white; background:#562c05;">a — brown
-</td></tr>
-<tr style="color:white;">
-<td style="background:#dd0907;">3 — red
-</td>
-<td style="background:#90713a;">b — tan
-</td></tr>
-<tr>
-<td style="color:white; background:#f20884;">4 — magenta
-</td>
-<td style="color:black;background: silver;">c — light grey
-</td></tr>
-<tr style="color:white;">
-<td style="background:#4700a5;">5 — purple
-</td>
-<td style="background: grey;">d — medium grey
-</td></tr>
-<tr style="color:white;">
-<td style="background:#0000d3;">6 — blue
-</td>
-<td style="background:#404040;">e — dark grey
-</td></tr>
-<tr>
-<td style="color:black; background:#02abea;">7 — cyan
-</td>
-<td style="color:white; background:#000;">f — black
-</td></tr></tbody></table>
+  <td style="color:white; background:#1fb714;">8 — green
+  </td>
+  <td style="color:white; background:#006412;">9 — dark green
+  </td>
+  <td style="color:white; background:#562c05;">a — brown
+  </td>
+  <td style="background:#90713a;">b — tan
+  </td>
+  <td style="color:black;background: silver;">c — light grey
+  </td>
+  <td style="background: grey;">d — medium grey
+  </td>
+  <td style="background:#404040;">e — dark grey
+  </td>
+  <td style="color:white; background:#000;">f — black
+  </td>
+</tr>
+</tbody></table>
 
 Source: [Wikipedia](https://en.wikipedia.org/wiki/List_of_software_palettes)
 
-The ⭐ (star) button is an additional 17th color that matches whatever color is currently used to display the time in normal operation; you can therefore customize it.
+Other buttons:
 
-The 🗑️ (trashcan) buton clears the screen (turns all LEDs black).
+- The ⭐ (star) is an additional 17th color that matches whatever color is currently used to display the time in normal operation; you can therefore customize it.
 
-The 🕑 (clock) button puts the clock back in normal time display mode. Rember to use this when you're done painting or the clock will remain in paint mode indefinitely (or until reboot).
+- The 🗑️ (trashcan) clears the screen (turns all LEDs black).
+
+- The 🕑 (clock) transitions the clock back in normal time display mode. Rember to use this when you're done painting or the clock will remain in paint mode indefinitely (or until reboot).
 
 ### Payload format
 
