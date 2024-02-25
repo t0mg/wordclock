@@ -39,10 +39,13 @@ You can oviously choose to customize any of the provided templates to eg create 
 
 ### Software
 
-The provided [source code](software/README.md) is using [PlatformIO](https://platformio.org/) and Arduino IDE. It runs a web server though a WiFi captive portal in order to easily configure the clock from a computer or smartphone, and perform OTA firmware update ([demo video](https://youtu.be/WF_X5soabm0)).
+The provided [source code](software/README.md) is using [PlatformIO](https://platformio.org/) and Arduino IDE. Here's a [demo video](https://youtu.be/WF_X5soabm0) (from v1.0, does not show all current features).
+
+It runs a web server though a WiFi captive portal for initial configuration via a smartphone or computer, then optionally connects to your home network to use internet time (NTP), MQTT client for home automation, and other features. Check out the [User's Manual](software/UsersManual.md) for more details.
 
 <p align="center">
-  <img src="images/webui.png" width="200">
+  <img src="images/webui.png" title="Screenshot of the configuration interface" width="200"/>
+  <img src="images/paint.png" title="Screenshot of the Paint interface" width="200" style="vertical-align:top"/>
 </p>
 
 It is, of course, possible to ditch that code entirely and use [ESPHome](https://esphome.io/) or [MicroPython](https://docs.micropython.org/en/latest/esp32/tutorial/intro.html) instead. 
