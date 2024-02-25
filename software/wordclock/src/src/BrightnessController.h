@@ -55,6 +55,7 @@ public:
     return res;
   };
   void setOriginalColor(RgbColor color);
+  RgbColor getOriginalColor() { return original_; };
   RgbColor getCorrectedColor() { return corrected_; };
 
   /*!

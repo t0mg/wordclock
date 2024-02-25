@@ -1,6 +1,8 @@
 # Software
 
-This section of the [Wordclock project](../README.md) covers the software running on the clock's ESP32.
+This section of the [Wordclock project](../README.md) covers the software running on the clock's ESP32. This page covers the basic features and how to build and deploy from source.
+
+For detailed usage instructions, please refer to the [User's Manual](UsersManual.md).
 
 ## Features
 
@@ -9,10 +11,14 @@ This section of the [Wordclock project](../README.md) covers the software runnin
 - Can use network time (NTP) or manual setting
 - Interface offers various other options such as display color, light sensor sensitivity, and [OTA firmware update](#ota-update)
 - [MQTT client](UsersManual.md#mqtt-client) to control the clock via home automation platforms such as [Home Assistant](https://www.home-assistant.io/)
+- Go beyond time display with an experimental web interface for real-time [painting](UsersManual.md#paint)
+
 
 ## Demo video
 
-[Here's a video](https://youtu.be/WF_X5soabm0) showing the Wordclock and its web interface in action.
+Here's an outdated video that still shows the Wordclock and its web interface in action.
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/WF_X5soabm0?si=1muYJChQ63m8lSHF" title="YouTube video player" frameborder="0" allow="clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ## Build with PlatformIO
 

@@ -79,7 +79,7 @@ private:
   // Server for OTA firmware update.
   HTTPUpdateServer http_updater_;
   // MQTT client.
-  MQTTClient mqtt_client_ = MQTTClient(512);
+  MQTTClient mqtt_client_ = MQTTClient(256);
   // WiFi client (for MQTT).
   WiFiClient net_;
 
@@ -141,6 +141,11 @@ private:
   // Time parameter value.
   char manual_time_value_[IOT_CONFIG_VALUE_LENGTH];
 
+  // Enables API.
+  IotRangeValueParameter api_enabled_param_;
+  // Value of the API setting option.
+  char api_enabled_value_[IOT_CONFIG_VALUE_LENGTH];
+
   // Enables MQTT client.
   IotRangeValueParameter mqtt_enabled_param_;
   // Value of the MQTT setting option.
@@ -164,6 +169,7 @@ private:
   // Config form groups.
   iotwebconf::ParameterGroup time_group_;
   iotwebconf::ParameterGroup display_group_;
+  iotwebconf::ParameterGroup api_group_;
   iotwebconf::ParameterGroup mqtt_group_;
 
   // IotWebConf interface handle.

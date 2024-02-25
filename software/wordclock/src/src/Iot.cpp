@@ -17,7 +17,7 @@
 #define INITIAL_WIFI_AP_PASSWORD "password"
 // IoT configuration version. Change this whenever IotWebConf object's
 // configuration structure changes.
-#define CONFIG_VERSION "5"
+#define CONFIG_VERSION "6"
 // Port used by the IotWebConf HTTP server.
 #define WEB_SERVER_PORT 80
 // Default timezone index from Timezones.h (Paris).
@@ -192,6 +192,11 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
       manual_time_param_("Time", "time", manual_time_value_, IOT_CONFIG_VALUE_LENGTH,
                          "hh:mm:ss", nullptr, "data-type='time' pattern='\\d{1,2}:\\d{1,2}:\\d{1,2}' step='1' data-controlledby='ntp_enabled' data-showon='0'"),
 
+      api_group_("api_group", "API"),
+      api_enabled_param_(
+          "Enable the (unsecure) API and <a href='/paint'>paint tool</a>", "api_enabled", api_enabled_value_,
+          IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
+ 
       mqtt_group_("mqtt_group", "MQTT"),
       mqtt_enabled_param_(
           "Note: when enabled, config updates trigger a reboot", "mqtt_enabled", mqtt_enabled_value_,
@@ -208,6 +213,7 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
   this->color_value_[0] = '\0';
   this->ntp_enabled_value_[0] = '\0';
   this->timezone_value_[0] = '\0';
+  this->api_enabled_value_[0] = '\0';
   this->mqtt_enabled_value_[0] = '\0';
   this->mqtt_server_value_[0] = '\0';
   this->mqtt_user_value_[0] = '\0';
@@ -282,6 +288,7 @@ void Iot::setup()
   this->color_value_[0] = '\0';
   this->ntp_enabled_value_[0] = '\0';
   this->timezone_value_[0] = '\0';
+  this->api_enabled_value_[0] = '\0';
   this->mqtt_enabled_value_[0] = '\0';
   this->mqtt_server_value_[0] = '\0';
   this->mqtt_user_value_[0] = '\0';
@@ -304,6 +311,9 @@ void Iot::setup()
   time_group_.addItem(&timezone_param_);
   time_group_.addItem(&manual_time_param_);
   iot_web_conf_.addParameterGroup(&time_group_);
+
+  api_group_.addItem(&api_enabled_param_);
+  iot_web_conf_.addParameterGroup(&api_group_);
 
   mqtt_group_.addItem(&mqtt_enabled_param_);
   mqtt_group_.addItem(&mqtt_server_param_);
@@ -330,24 +340,45 @@ void Iot::setup()
 
   clearTransientParams_();
   updateClockFromParams_();
-  if (parseBooleanValue(boot_animation_enabled_value_))
-  {
-    display_->runBootAnimation();
-  }
-  web_server_.on("/", [this]
-                 { handleHttpToRoot_(); });
-  web_server_.onNotFound([this]
-                         { iot_web_conf_.handleNotFound(); });
-  web_server_.on(UriBraces("/api/matrix/set/{}"), [this]() {
-    String payload = web_server_.pathArg(0);
-    setMatrixFromPayload_(payload);
-    web_server_.send(200, "text/plain", "OK");
-  });
+
+  web_server_.on("/", [this]  { handleHttpToRoot_(); });
+  web_server_.onNotFound([this] { iot_web_conf_.handleNotFound(); });
   web_server_.on("/logo.svg", [this]() {
     web_server_.send(200, "image/svg+xml", (char *)logo_svg_start);
   });
+
+  web_server_.on(UriBraces("/api/matrix/set/{}"), [this]() {
+    if (parseBooleanValue(api_enabled_value_)) {    
+      String payload = web_server_.pathArg(0);
+      setMatrixFromPayload_(payload);
+      web_server_.send(200, "text/plain", "OK");
+    } else {
+      web_server_.send(403, "text/plain", "API not enabled");
+    }
+  });
+  web_server_.on("/api/matrix/unset", [this]() {
+    if (parseBooleanValue(api_enabled_value_)) {    
+      display_->clearMatrix();
+      web_server_.send(200, "text/plain", "OK");
+    } else {
+      web_server_.send(403, "text/plain", "API not enabled");
+    }
+  });
+  web_server_.on("/api/color/get", [this]() {
+    if (parseBooleanValue(api_enabled_value_)) {
+      char hexColor[10];
+      HtmlColor(display_->getColor()).ToNumericalString(hexColor, 9);    
+      web_server_.send(200, "text/plain", hexColor);
+    } else {
+      web_server_.send(403, "text/plain", "API not enabled");
+    }
+  });
   web_server_.on("/paint", [this]() {
-    web_server_.send(200, "text/html", (char *)paint_html_start);
+    if (parseBooleanValue(api_enabled_value_)) {    
+      web_server_.send(200, "text/html", (char *)paint_html_start);
+    } else {
+      web_server_.send(403, "text/plain", "API not enabled");
+    }
   });
 
   if (parseBooleanValue(mqtt_enabled_value_))
@@ -361,6 +392,11 @@ void Iot::setup()
                            { mqttMessageReceived_(topic, payload); });
     String availabilityTopic = mqtt_topic_prefix_ + "/availability";
     mqtt_client_.setWill(availabilityTopic.c_str(), "offline");
+  }
+
+  if (parseBooleanValue(boot_animation_enabled_value_))
+  {
+    display_->runBootAnimation();
   }
 
   initialized_ = true;
@@ -645,7 +681,7 @@ void Iot::mqttMessageReceived_(String &topic, String &payload)
   }
   else if (topic == mqtt_topic_prefix_ + "/light/matrix/unset")
   {
-      display_->clearMatrix();
+    display_->clearMatrix();
   }
 }
 
@@ -668,8 +704,8 @@ void Iot::toggleDisplay_(String payload)
 }
 
 void Iot::setMatrixFromPayload_(String &payload) {
-  if (payload.length() >= 220) {
-    display_->setMatrix(Palette::stringToRgb(payload));
+  if (payload.length() >= 110) {
+    display_->setMatrix(Palette::stringToRgb(payload, display_->getColor()));
   } else {
     DLOG("Matrix payload is too short :");
     DLOGLN(payload.length());

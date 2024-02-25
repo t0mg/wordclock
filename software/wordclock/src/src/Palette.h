@@ -5,5 +5,5 @@
 
 namespace Palette
 {
-  std::vector<RgbColor> stringToRgb(String payload);
+  std::vector<RgbColor> stringToRgb(String payload, RgbColor defaultColor);
 };

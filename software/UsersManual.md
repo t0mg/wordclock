@@ -32,7 +32,7 @@ Here are the available configuration options.
 
 ### Network
 
-The NETWORK section will show at the top of the page if it has not been configured before, and will afterwards move to the bottom (as shown in the screenshot above) since it probably doesn't need to change it very often.
+The Network section will show at the top of the page if it has not been configured before, and will afterwards move to the bottom (as shown in the screenshot above) since it probably doesn't need to change it very often.
 
 -  __Clock name__ - defaults to `WordClock`. It will show up as SSID in Access Point mode (brifely at the beginning of every boot sequence, or if the clock is unable to connect to the configured WiFi network). You shouldn't need to change it unless you are planning to set up multiple clocks and/or use MQTT as it is also used in MQTT topics.
 - __AP password__ - this password must be at least 8, at most 32 characters. **DO NOT LOSE IT** or you will need to reflash your clock. The default value is `password`. It is used in 2 situations: 
@@ -43,11 +43,20 @@ The NETWORK section will show at the top of the page if it has not been configur
 
 ### Display
 
-TODO
+- __Startup animation__ - Enables a short animation when booting. Convenient to control that all LEDs in the matrix are working.
+- __Clock face language__ - Selects which language to use for time display. See [ClockFace.cpp](wordclock/src/src/ClockFace.cpp) to check the expected layout for each.
+- __Light sensor sensitivity__ - The light sensor can be used to dim the chosen display color when measured ambiant light is low.
+- __Color__ - The color used by the clock to display the time. This setting is not modified when changing the color via [MQTT](#mqtt-client) (meaning that clock can return to this value after a reboot).
 
 ### Time
 
-TODO
+- __Use network time (requires WiFi)__ - Enable NTP to retrieve and periodically correct displayed time. Requires Network seettings to be configured to a WiFi network with internet access (as in AP mode the clock can't access NTP servers).
+- __Time zone__ - Only shown if network time is enabled. Choose your local timezone from this list.
+- __Time__ - When network time is not enabled, the current time can manually be set here. In this mode the clock does not require an internet access nor WiFi to be configured. Time is kept thanks to the coin cell battery powering the RTC chip (meaning you only need to set this once even if you reboot or unplug the clock).
+
+### API
+
+Enables a non password-protected [API](#api-1) and experimental [paint](#paint) web interface.
 
 ### MQTT
 
@@ -84,6 +93,15 @@ The clock currently doesn't support SSL. To make things a bit more secure and av
 - Prefer making config changes in Access Point mode rather than when connected to your home network
 - Set up a dedicated WiFi network for your IoT devices
 
+## API
+
+The API is disabled by default because it is not secured. It was created to allow the [Paint](#paint) web interface to work, but could be used directly as well.
+
+When enabled, the following routes are activated:
+- `http://<clock IP>/api/color/get` -> returns the HTML code of the currenly set color
+- `http://<clock IP>/api/matrix/set/<payload>` -> activates Paint mode and displays the payload, see [Paint](#paint) for details
+- `http://<clock IP>/api/matrix/unset` -> exits Paint mode and returns to displaying time
+
 ## MQTT client
 
 MQTT is a lightweight publish-subscribe protocol designed for resource-constrained devices and low-bandwidth networks, commonly used in IoT applications. MQTT clients talk via an MQTT broker (see here for [Home Assistant](https://www.home-assistant.io/integrations/mqtt/) instructions).
@@ -101,6 +119,10 @@ Topics are prefixed with the name defined as `Clock name` in the web UI settings
 ### Command topics
 - `wordclock/light/color/set` -> sets the LED color, payload must be an `r,g,b` formatted string
 - `wordclock/light/switch/set` -> send `ON` or `OFF` to toggle the display (with a fade effect). The previously set color is restored on `ON`.
+
+#### Matrix paint (experimental)
+- `wordclock/light/matrix/set` -> activates Paint mode and displays the payload, a 110 characters string using a preset palette, see [Paint](#paint)
+- `wordclock/light/matrix/unset` -> exits Paint mode and returns to displaying time
 
 ### Home Assistant configuration
 
@@ -125,9 +147,84 @@ mqtt:
 
 Entities can then be arranged in a dashboard card like this one:
 
-![Home Assistant card](../images/homeassistant.png)
+<p align="center">
+  <img src="../images/homeassistant.png" width="300" title="Home Assistant card">
+</p>
 
 (the icon used for the button is `mdi:apps-box`)
+
+## Paint
+
+__Note:__ This is an experimental feature. Payload format, palette and APIs might change.
+
+When the [API toggle](#api) is enabled, a web interface becomes available at `http://<clock ip>/paint`.
+
+It is a basic real time drawing tool that allows you to take control of the clock's LED matrix. While it is fun to just play with, it is meant to easily create custom icons to be used in a home automation setup.
+
+<p align="center">
+  <img src="../images/paint.png" width="300" title="The Paint web interface">
+</p>
+
+To keep thing simple, the system works with 16 preset colors based on the original 4-bit palette of the 1987 Macintosh II:
+
+<table style="border: none;">
+<tbody><tr>
+<td style="color:black; background:#fff;">0 — white
+</td>
+<td style="color:white; background:#1fb714;">8 — green
+</td></tr>
+<tr>
+<td style="color:black; background:#fbf305;">1 — yellow
+</td>
+<td style="color:white; background:#006412;">9 — dark green
+</td></tr>
+<tr>
+<td style="color:black; background:#ff6403;">2 — orange
+</td>
+<td style="color:white; background:#562c05;">a — brown
+</td></tr>
+<tr style="color:white;">
+<td style="background:#dd0907;">3 — red
+</td>
+<td style="background:#90713a;">b — tan
+</td></tr>
+<tr>
+<td style="color:white; background:#f20884;">4 — magenta
+</td>
+<td style="color:black;background: silver;">c — light grey
+</td></tr>
+<tr style="color:white;">
+<td style="background:#4700a5;">5 — purple
+</td>
+<td style="background: grey;">d — medium grey
+</td></tr>
+<tr style="color:white;">
+<td style="background:#0000d3;">6 — blue
+</td>
+<td style="background:#404040;">e — dark grey
+</td></tr>
+<tr>
+<td style="color:black; background:#02abea;">7 — cyan
+</td>
+<td style="color:white; background:#000;">f — black
+</td></tr></tbody></table>
+
+Source: [Wikipedia](https://en.wikipedia.org/wiki/List_of_software_palettes)
+
+The ⭐ (star) button is an additional 17th color that matches whatever color is currently used to display the time in normal operation; you can therefore customize it.
+
+The 🗑️ (trashcan) buton clears the screen (turns all LEDs black).
+
+The 🕑 (clock) button puts the clock back in normal time display mode. Rember to use this when you're done painting or the clock will remain in paint mode indefinitely (or until reboot).
+
+### Payload format
+
+At the bottom of the page, a text version of the image payload is displayed, so it can be copied and used in direct [MQTT](#mqtt-client) or [HTTP GET](#api-1) calls, for example to be used in home automation scenarios.
+
+The payload is a string of 110 characters, one for each LED/pixel in the 11x10 matrix, starting from the top left corner. Allowed values are:
+
+- `0` to `f` representing the hexadecimal index of one of the 16 colors from the preset palette,
+- `x` representing whatever color is currently selected for displaying the time.
 
 ## Credits
 

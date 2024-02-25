@@ -22,6 +22,7 @@ public:
   void setup();
   void loop();
   void setColor(const RgbColor &color);
+  RgbColor getColor() { return _brightnessController.getOriginalColor(); };
   void setClockFace(ClockFace* clockface);
   void runBootAnimation();
 

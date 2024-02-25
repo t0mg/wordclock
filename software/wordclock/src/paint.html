@@ -21,16 +21,36 @@
       flex-wrap: wrap;
     }
 
+    h1 {
+      font-weight: 100;
+      text-transform: uppercase;
+      font-size: 20px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .logo {
+      height: 60px;
+      vertical-align: middle;
+      margin: -4px 10px 0 0;
+    }
+
+    h1 sup {
+      text-transform: lowercase;
+      color: rgb(221, 9, 7);
+    }
+
     .tools {
       display: flex;
       width: 100%;
+      margin: 20px 0;
     }
 
     .tools button {
       margin: 4px;
       border: 0;
       border-radius: 0.3rem;
-      background-color: #16A1E7;
+      background-color: #4b4b4b;
       color: #fff;
       font-size: 1.2rem;
       width: 100%;
@@ -38,7 +58,6 @@
 
     section {
       flex-direction: column;
-      margin: 1rem;
     }
 
     p {
@@ -46,13 +65,14 @@
     }
 
     textarea {
-      margin: 1rem;
-      width: 100%;
-      height: 100px;
+      margin-top: 40px;
       width: 400px;
-      background: #111;
+      height: 100px;
+      background: black;
       color: #aaa;
       font-family: monospace;
+      border: 10px solid black;
+      box-sizing: border-box;
     }
 
     canvas {
@@ -63,6 +83,7 @@
       height: 400px;
       image-rendering: pixelated;
       box-shadow: 0px 0px 15px 1px #ffffff7d;
+      cursor: crosshair;
     }
 
     input[type="color"] {
@@ -76,30 +97,38 @@
 
     .palette {
       display: flex;
-      width: 320px;
+      width: 400px;
       flex-wrap: wrap;
     }
 
-    .palette button {
+    .palette button, #custom {
       border: none;
-      width: 20px;
-      height: 20px;
+      width: 50px;
+      height: 50px;
+    }
+
+    #custom {
+      display: none;
+      width: 100%;
+      text-shadow: 0px 1px 6px black;
     }
   </style>
 
 </head>
 
 <body>
+  <h1><img class="logo" src="logo.svg"/> Paint <sup>beta</sup></h1>
   <canvas width="11" height="10"></canvas>
   <section>
     <div class="tools">
-      <input type="color" disabled>
-      <button id="clear">clear</button>
+      <input type="color" value="#ffffff" disabled>
+      <button id="clear" title="Clear">🗑️</button>
+      <button id="clock" title="Restore time display">🕑</button>
     </div>
     <div class="palette"></div>
+    <button id="custom" title="Clock's current color">⭐</button>
   </section>
   <section>
-    <p>MQTT payload</p>
     <textarea></textarea>
   </section>
 
@@ -108,6 +137,7 @@
     const context = paintCanvas.getContext("2d");
     const colorPicker = document.querySelector("input[type='color']");
     context.fillRect(0, 0, 11, 10);
+    context.fillStyle = "#fff";
 
     let x = 0,
       y = 0;
@@ -151,25 +181,48 @@
 
     const textarea = document.querySelector("textarea");
 
-    let debounce;
     const updateText = () => {
       let str = "";
       for (let y = 0; y < 10; y++) {
         for (let x = 0; x < 11; x++) {
-          let p = context.getImageData(x, y, 1, 1).data;
-          str += ("00" + palette.indexOf(rgbToHexString(p)).toString(16)).slice(-2);
+          const p = context.getImageData(x, y, 1, 1).data;
+          // 256 colors palette
+          // str += ("00" + palette.indexOf(rgbToHexString(p)).toString(16)).slice(-2);
+          // 16 colors palette
+          const paletteIdx = palette.indexOf(rgbToHexString(p));
+          if (paletteIdx < 0) {
+            // No part of palette, assume custom color.
+            str += "x";
+          } else {
+            str += paletteIdx.toString(16);
+          }
         }
       }
       const prevVal = textarea.value;
       if (prevVal != str) {
         textarea.value = str;
-        if (debounce) {
-          clearTimeout(debounce);
-        }
-        debounce = setTimeout(() => {
-          console.log("update");
-          fetch("/api/matrix/set/" + str);
-        }, 30);
+        fetchNext(str);
+      }
+    };
+
+    let nextPayload;
+    let pending = false;
+    const fetchNext = (payload = null) => {
+      if (payload) {
+        nextPayload = payload;
+      }
+      if (nextPayload && !pending) {
+        pending = true;
+        fetch("/api/matrix/set/" + nextPayload)
+          .catch(e => console.warn(e))
+          .finally(() => {
+            // Add a bit of cooldown before next call.
+            setTimeout(() => {
+              pending = false;
+              fetchNext();            
+            }, 100);
+          });
+        nextPayload = null;
       }
     };
 
@@ -181,6 +234,10 @@
       context.fillStyle = style;
     };
 
+    document.getElementById("clock").onclick = () => {
+      fetch("/api/matrix/unset");
+    };
+
     paintCanvas.addEventListener("mousedown", startDrawing);
     paintCanvas.addEventListener("touchstart", startDrawing);
     paintCanvas.addEventListener("mousemove", drawLine);
@@ -190,43 +247,9 @@
     paintCanvas.addEventListener("touchend", stopDrawing);
 
     const palette = [
-      "000000","0b0b0b","222222","444444","555555","777777","888888",
-      "aaaaaa","bbbbbb","dddddd","eeeeee","00000b","000022","000044",
-      "000055","000077","000088","0000aa","0000bb","0000dd","0000ee",
-      "000b00","002200","004400","005500","007700","008800","00aa00",
-      "00bb00","00dd00","00ee00","0b0000","220000","440000","550000",
-      "770000","880000","aa0000","bb0000","dd0000","ee0000","000033",
-      "000066","000099","0000cc","0000ff","003300","003333","003366",
-      "003399","0033cc","0033ff","006600","006633","006666","006699",
-      "0066cc","0066ff","009900","009933","009966","009999","0099cc",
-      "0099ff","00cc00","00cc33","00cc66","00cc99","00cccc","00ccff",
-      "00ff00","00ff33","00ff66","00ff99","00ffcc","00ffff","330000",
-      "330033","330066","330099","3300cc","3300ff","333300","333333",
-      "333366","333399","3333cc","3333ff","336600","336633","336666",
-      "336699","3366cc","3366ff","339900","339933","339966","339999",
-      "3399cc","3399ff","33cc00","33cc33","33cc66","33cc99","33cccc",
-      "33ccff","33ff00","33ff33","33ff66","33ff99","33ffcc","33ffff",
-      "660000","660033","660066","660099","6600cc","6600ff","663300",
-      "663333","663366","663399","6633cc","6633ff","666600","666633",
-      "666666","666699","6666cc","6666ff","669900","669933","669966",
-      "669999","6699cc","6699ff","66cc00","66cc33","66cc66","66cc99",
-      "66cccc","66ccff","66ff00","66ff33","66ff66","66ff99","66ffcc",
-      "66ffff","990000","990033","990066","990099","9900cc","9900ff",
-      "993300","993333","993366","993399","9933cc","9933ff","996600",
-      "996633","996666","996699","9966cc","9966ff","999900","999933",
-      "999966","999999","9999cc","9999ff","99cc00","99cc33","99cc66",
-      "99cc99","99cccc","99ccff","99ff00","99ff33","99ff66","99ff99",
-      "99ffcc","99ffff","cc0000","cc0033","cc0066","cc0099","cc00cc",
-      "cc00ff","cc3300","cc3333","cc3366","cc3399","cc33cc","cc33ff",
-      "cc6600","cc6633","cc6666","cc6699","cc66cc","cc66ff","cc9900",
-      "cc9933","cc9966","cc9999","cc99cc","cc99ff","cccc00","cccc33",
-      "cccc66","cccc99","cccccc","ccccff","ccff00","ccff33","ccff66",
-      "ccff99","ccffcc","ccffff","ff0000","ff0033","ff0066","ff0099",
-      "ff00cc","ff00ff","ff3300","ff3333","ff3366","ff3399","ff33cc",
-      "ff33ff","ff6600","ff6633","ff6666","ff6699","ff66cc","ff66ff",
-      "ff9900","ff9933","ff9966","ff9999","ff99cc","ff99ff","ffcc00",
-      "ffcc33","ffcc66","ffcc99","ffcccc","ffccff","ffff00","ffff33",
-      "ffff66","ffff99","ffffcc","ffffff"
+      "ffffff", "fbf305", "ff6403", "dd0907", "f20884", "4700a5",
+      "0000d3", "02abea", "1fb714", "006412", "562c05", "90713a",
+      "c0c0c0", "808080", "404040", "000000"
     ];
 
     const pdiv = document.querySelector(".palette");
@@ -240,6 +263,19 @@
       pdiv.appendChild(b);
     });
 
+    getCustomColor = async () => {
+      const res = await fetch("/api/color/get");
+      const customColor = await res.text();
+      const b = document.getElementById("custom");
+      b.style.backgroundColor = `${customColor}`;
+      document.querySelector("sup").style.color = `${customColor}`;
+      b.style.display = 'initial';
+      b.onclick = () => {
+        colorPicker.value = `${customColor}`;
+        context.fillStyle = `${customColor}`;
+      };
+    }
+    getCustomColor();
   </script>
 </body>
 
