@@ -18,6 +18,10 @@ For detailed usage instructions, please refer to the [User's Manual](UsersManual
 
 [Here's a video](https://youtu.be/WF_X5soabm0) showing the Wordclock with 1.0 firmware and its web interface in action. New features were added since, such as MQTT and Paint.
 
+## Release binaries
+
+If you are not interested in modifying the source code, you can find prebuilt binaries [here](https://github.com/t0mg/wordclock/releases) that can be flashed ESP32 with [esptool.py](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/flashing-firmware.html).
+
 ## Build with PlatformIO
 
 This is the recommended method as it makes it easy to manage dependencies and build for a specific flavor of ESP32. If you do not want to use PlatformIO, see [below](#deprecated-build-with-arduino-ide) for detailed instructions.
