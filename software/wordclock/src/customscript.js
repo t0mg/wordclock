@@ -50,6 +50,8 @@ document.addEventListener(
             option.value = "Scanning for WiFi networks...";
             datalist.appendChild(option);
 
+            // add a small delay, as scanning affects response of the esp.
+            await new Promise(r => setTimeout(r, 300));
             while (!done) {
                 // start scan. first result is always empty list.
                 const result = await fetch("wifilist");
