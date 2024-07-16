@@ -37,6 +37,19 @@ document.addEventListener(
         //No fear...
         (async () => {
             let done = false;
+
+            // Add placeholder.
+            let ssid = document.getElementById("iwcWifiSsid");
+            ssid.setAttribute('list', 'apslist');
+            var datalist = document.createElement("DATALIST");
+            datalist.setAttribute("id", "apslist");
+            const formEl = document.querySelector("form");
+            formEl.appendChild(datalist);
+            // Add entrdatalist.
+            var option = document.createElement("option");
+            option.value = "Scanning for WiFi networks...";
+            datalist.appendChild(option);
+
             while (!done) {
                 // start scan. first result is always empty list.
                 const result = await fetch("wifilist");
@@ -49,16 +62,14 @@ document.addEventListener(
                 else if (result.status == 200) {
                     // result is in.
                     done = true;
+                    while (datalist.firstChild) {
+                        datalist.removeChild(datalist.firstChild)
+                    }
+
                     // Get the result.
                     const str = await result.text();
                     // If not empty, add it.
                     if (str.length > 0) {
-                        let ssid = document.getElementById("iwcWifiSsid");
-                        ssid.setAttribute('list', 'apslist');
-                        var y = document.createElement("DATALIST");
-                        y.setAttribute("id", "apslist");
-                        const formEl = document.querySelector("form");
-                        formEl.appendChild(y);
                         const array = str.split("\n");
                         // Filter the list.
                         arrayfiltered = array.sort().filter(function (item, pos, ary) {
@@ -69,7 +80,7 @@ document.addEventListener(
                             if (item.length > 0) {
                                 var option = document.createElement("option");
                                 option.value = item;
-                                y.appendChild(option);
+                                datalist.appendChild(option);
                             }
 
                         });
