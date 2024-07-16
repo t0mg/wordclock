@@ -36,49 +36,48 @@ document.addEventListener(
 
         //No fear...
         (async () => {
-            // start scan. first result is always empty list.
-            let result = await fetch("wifilist");
             let done = false;
-            if (result.status == 200) {
-                while (!done) {
-                    let str = await result.text();
-                    // get result.
-                    if (str.length == 0) {
-                        // if empty list, fetch again.
-                        result = await fetch("wifilist");
-                        str = await result.text();
-                    }
-                    // new fetch, check if it is ok.
-                    if (result.status == 200) {
-                        if (str.length > 0) {
-                            let ssid = document.getElementById("iwcWifiSsid");
-                            ssid.setAttribute('list', 'apslist');
-                            var y = document.createElement("DATALIST");
-                            y.setAttribute("id", "apslist");
-                            const formEl = document.querySelector("form");
-                            formEl.appendChild(y);
-                            let array = str.split("\n");
-                            // Filter the list.
-                            arrayfiltered = array.sort().filter(function (item, pos, ary) {
-                                return !pos || item != ary[pos - 1];
-                            });
-                            arrayfiltered.forEach(function (item, index) {
-                                // Do something
+            while (!done) {
+                // start scan. first result is always empty list.
+                const result = await fetch("wifilist");
+
+                if (result.status == 202) {
+                    // request accepted, not yet handled.
+                    // wait and retry in 1 second.
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+                else if (result.status == 200) {
+                    // result is in.
+                    done = true;
+                    // Get the result.
+                    const str = await result.text();
+                    // If not empty, add it.
+                    if (str.length > 0) {
+                        let ssid = document.getElementById("iwcWifiSsid");
+                        ssid.setAttribute('list', 'apslist');
+                        var y = document.createElement("DATALIST");
+                        y.setAttribute("id", "apslist");
+                        const formEl = document.querySelector("form");
+                        formEl.appendChild(y);
+                        const array = str.split("\n");
+                        // Filter the list.
+                        arrayfiltered = array.sort().filter(function (item, pos, ary) {
+                            return !pos || item != ary[pos - 1];
+                        });
+                        arrayfiltered.forEach(function (item, index) {
+                            // Do something
+                            if (item.length > 0) {
                                 var option = document.createElement("option");
                                 option.value = item;
                                 y.appendChild(option);
+                            }
 
-                            });
-                            // yay done.
-                            done = true;
-                        } else {
-                            // wait and retry in 1 second.
-                            await new Promise(r => setTimeout(r, 1000));
-                        }
-                    } else {
-                        // second fetch failed.. lets stop.
-                        done = true;
+                        });
                     }
+                } else {
+                    // Unexpected error code. bail out.
+                    console.log("Invalid response from datalist.");
+                    done = true;
                 }
             }
         })();

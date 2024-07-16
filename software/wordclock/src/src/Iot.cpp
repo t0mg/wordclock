@@ -390,21 +390,21 @@ void Iot::setup()
     if (n  == -2 ) {
       // not yet scanning.
       WiFi.scanNetworks(true);
-      web_server_.send(200, "text/html", (char *)"");
+      web_server_.send(202, "text/plain", (char *)"");
       Serial.println("Scan started\n");
     } else if ( n == -1 ) {
       // still scanning.
-      web_server_.send(200, "text/html", (char *)"");
+      web_server_.send(202, "text/plain", (char *)"");
     } else {
       if (n == 0) {
-        web_server_.send(200, "text/html", (char *)"");
+        web_server_.send(200, "text/plain", (char *)"");
       } else {
         String str = "";
         for (int i = 0; i < n; ++i) {
           // Print SSID and RSSI for each network found
           str += WiFi.SSID(i) + "\n";
         }
-        web_server_.send(200, "text/html", (char *)str.c_str());
+        web_server_.send(200, "text/plain", (char *)str.c_str());
       }
       WiFi.scanDelete();
     }
