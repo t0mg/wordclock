@@ -76,7 +76,7 @@ document.addEventListener(
                     }
                 } else {
                     // Unexpected error code. bail out.
-                    console.log("Invalid response from datalist.");
+                    console.log("Invalid response from fetching wifilist.");
                     done = true;
                 }
             }
