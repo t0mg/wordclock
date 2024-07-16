@@ -34,6 +34,55 @@ document.addEventListener(
             });   
         }
 
+        //No fear...
+        (async () => {
+            // start scan. first result is always empty list.
+            let result = await fetch("wifilist");
+            let done = false;
+            if (result.status == 200) {
+                while (!done) {
+                    let str = await result.text();
+                    // get result.
+                    if (str.length == 0) {
+                        // if empty list, fetch again.
+                        result = await fetch("wifilist");
+                        str = await result.text();
+                    }
+                    // new fetch, check if it is ok.
+                    if (result.status == 200) {
+                        if (str.length > 0) {
+                            let ssid = document.getElementById("iwcWifiSsid");
+                            ssid.setAttribute('list', 'apslist');
+                            var y = document.createElement("DATALIST");
+                            y.setAttribute("id", "apslist");
+                            const formEl = document.querySelector("form");
+                            formEl.appendChild(y);
+                            let array = str.split("\n");
+                            // Filter the list.
+                            arrayfiltered = array.sort().filter(function (item, pos, ary) {
+                                return !pos || item != ary[pos - 1];
+                            });
+                            arrayfiltered.forEach(function (item, index) {
+                                // Do something
+                                var option = document.createElement("option");
+                                option.value = item;
+                                y.appendChild(option);
+
+                            });
+                            // yay done.
+                            done = true;
+                        } else {
+                            // wait and retry in 1 second.
+                            await new Promise(r => setTimeout(r, 1000));
+                        }
+                    } else {
+                        // second fetch failed.. lets stop.
+                        done = true;
+                    }
+                }
+            }
+        })();
+
         // Replaces inputs with data-options attribute with proper select elements.
         // Inspiration: https://github.com/prampec/IotWebConf/issues/29#issuecomment-533751475
 
