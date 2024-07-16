@@ -218,6 +218,7 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
   this->mqtt_server_value_[0] = '\0';
   this->mqtt_user_value_[0] = '\0';
   this->mqtt_password_value_[0] = '\0';
+
 }
 
 Iot::~Iot() {}
@@ -379,6 +380,36 @@ void Iot::setup()
     } else {
       web_server_.send(403, "text/plain", "API not enabled");
     }
+  });
+  web_server_.on("/wifilist", [this]() {
+    long s = millis();
+
+    int n = WiFi.scanComplete();
+    Serial.print("Scan complete: ");
+    Serial.println(n);
+    if (n  == -2 ) {
+      // not yet scanning.
+      WiFi.scanNetworks(true);
+      web_server_.send(200, "text/html", (char *)"");
+      Serial.println("Scan started\n");
+    } else if ( n == -1 ) {
+      // still scanning.
+      web_server_.send(200, "text/html", (char *)"");
+    } else {
+      if (n == 0) {
+        web_server_.send(200, "text/html", (char *)"");
+      } else {
+        String str = "";
+        for (int i = 0; i < n; ++i) {
+          // Print SSID and RSSI for each network found
+          str += WiFi.SSID(i) + "\n";
+        }
+        web_server_.send(200, "text/html", (char *)str.c_str());
+      }
+      WiFi.scanDelete();
+    }
+    long e = millis();
+    Serial.println(e - s);
   });
 
   if (parseBooleanValue(mqtt_enabled_value_))
