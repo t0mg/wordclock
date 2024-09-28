@@ -53,7 +53,7 @@ After the firwmare has been flashed over USB once, you can use the OTA feature t
 - In PatformIO, the merged build file is located in `.pio\build\<environment name>\firmware_<environment name>_merged.bin`.
 - If you are building with Arduino IDE, use `Sketch > Export compiled Binary` to export the file.
 
-__Warning__: if the `firmware config version` displayed at the very bottom of the web interface changes, your settings will be reset. They should othewise remain.
+__Warning__: if the `firmware config version` displayed at the very bottom of the web interface changes, your settings will be reset. They should otherwise remain.
 
 ## [Deprecated] Build with Arduino IDE
 
