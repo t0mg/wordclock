@@ -43,7 +43,7 @@ This is the recommended method as it makes it easy to manage dependencies and bu
 3. Verify that the target board in `platformio.ini` matches your ESP32 hardware
 4. Build and upload
 
-**Important**: Platform IO builds and flashes multiple bin files (bootloader, partition, firmware). To merge those into a single binary for flashing separately from e.g. esptool or the OTA updater, run `pio run -t mergebin` from a PlatformIO console and look the file ending with "merged.bin" in the `.pio/build` folder.
+**Important**: Platform IO builds and flashes multiple bin files (bootloader, partition, firmware). To merge those into a single binary for flashing separately from e.g. esptool or the OTA updater, run `pio run -t mergebin` from a PlatformIO console and look for the file ending with "merged.bin" in the `.pio/build` folder.
 
 ## OTA update
 
