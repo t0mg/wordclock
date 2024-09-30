@@ -10,6 +10,7 @@
 #include <uri/UriBraces.h>
 #include <MQTT.h>
 #include <esp_sntp.h>
+#include <string>
 
 // Name of this IoT object.
 #define THING_NAME "WordClock"
@@ -348,6 +349,19 @@ void Iot::setup()
     web_server_.send(200, "image/svg+xml", (char *)logo_svg_start);
   });
 
+  web_server_.on(UriBraces("/api/text/{}"), [this]() {
+    if (parseBooleanValue(api_enabled_value_)) {
+      RgbColor textColor = web_server_.arg("color") != nullptr ? Palette::stringToRgb(web_server_.arg("color").substring(0,1), display_->getColor()).at(0) : display_->getColor();
+      int scrollSpeed =  web_server_.arg("delay") != nullptr ? web_server_.arg("delay").toInt() : 150;
+      bool rtl = web_server_.arg("rtl") != nullptr;
+      String payload = web_server_.urlDecode(web_server_.pathArg(0));
+
+      scrollText_(payload, textColor, scrollSpeed, rtl);
+      web_server_.send(200, "text/plain", "OK");
+    } else {
+      web_server_.send(403, "text/plain", "API not enabled");
+    }
+  });
   web_server_.on(UriBraces("/api/matrix/set/{}"), [this]() {
     if (parseBooleanValue(api_enabled_value_)) {    
       String payload = web_server_.pathArg(0);
@@ -714,6 +728,10 @@ void Iot::mqttMessageReceived_(String &topic, String &payload)
   {
     display_->clearMatrix();
   }
+  else if (topic == mqtt_topic_prefix_ + "/light/text/set")
+  {
+    display_->scrollText(payload, display_->getColor());
+  }
 }
 
 void Iot::toggleDisplay_(String payload)
@@ -740,5 +758,14 @@ void Iot::setMatrixFromPayload_(String &payload) {
   } else {
     DLOG("Matrix payload is too short :");
     DLOGLN(payload.length());
+  }
+}
+
+void Iot::scrollText_(String &text, RgbColor color, int speed, bool rightToLeft) {
+  if (text.length() > 0 && text.length() < 200) {
+    display_->scrollText(text, color, speed, rightToLeft);
+  } else {
+    DLOG("Text length out of bounds");
+    DLOGLN(text.length());
   }
 }

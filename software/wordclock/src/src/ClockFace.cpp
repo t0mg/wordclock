@@ -6,13 +6,6 @@
 
 #include "nodo.h" // Nodo stuff
 
-// The number of LEDs connected before the start of the matrix.
-#define NEOPIXEL_SIGNALS 4
-
-// Matrix dimensions.
-#define NEOPIXEL_ROWS 11
-#define NEOPIXEL_COLUMNS 10
-
 // Number of LEDs on the whole strip.
 #define NEOPIXEL_COUNT (NEOPIXEL_ROWS * NEOPIXEL_COLUMNS + NEOPIXEL_SIGNALS)
 
@@ -42,7 +35,7 @@ uint16_t ClockFace::map(int16_t x, int16_t y)
   case LightSensorPosition::Top:
   {
     static NeoTopology<ColumnMajorAlternating90Layout> sensor_on_top(
-        NEOPIXEL_ROWS, NEOPIXEL_COLUMNS);
+        NEOPIXEL_COLUMNS, NEOPIXEL_ROWS);
 #ifdef NODO
     int ind, inc;
     // do conversion from normal coordinates to Nodo coordinates
@@ -63,7 +56,7 @@ uint16_t ClockFace::map(int16_t x, int16_t y)
   case LightSensorPosition::Bottom:
   {
     static NeoTopology<ColumnMajorAlternating270Layout> sensor_on_bottom(
-        NEOPIXEL_ROWS, NEOPIXEL_COLUMNS);
+        NEOPIXEL_COLUMNS, NEOPIXEL_ROWS);
     return sensor_on_bottom.Map(x, y) + NEOPIXEL_SIGNALS;
   }
   default:

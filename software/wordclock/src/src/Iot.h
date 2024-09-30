@@ -66,6 +66,8 @@ private:
   void mqttMessageReceived_(String &topic, String &payload);
   // Updates the display with an arbitrary payload.
   void setMatrixFromPayload_(String &payload);
+  // Updates the display with an arbitrary payload.
+  void scrollText_(String &text, RgbColor color, int speed, bool rightToLeft);
 
   // Whether IoT configuration was initialized.
   bool initialized_ = false;

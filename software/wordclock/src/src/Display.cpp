@@ -19,19 +19,22 @@ void Display::setup()
 
 void Display::loop()
 {
+  if (_mode == TICKER) {
+    return;
+  }
   if (_bootAnimations.IsAnimating()) {
     _bootAnimations.UpdateAnimations();
-  } else if (_matrix_mode) {
-      if (_matrix_buf.size() >= 110) {
+  } else if (_mode == MATRIX) {
+      if (_matrix_buf.size() >= NEOPIXEL_COLUMNS * NEOPIXEL_ROWS) {
         _pixels.SetPixelColor(_clockFace->mapMinute(ClockFace::TopLeft), black);
         _pixels.SetPixelColor(_clockFace->mapMinute(ClockFace::TopRight), black); 
         _pixels.SetPixelColor(_clockFace->mapMinute(ClockFace::BottomLeft), black); 
         _pixels.SetPixelColor(_clockFace->mapMinute(ClockFace::BottomRight), black);  
         DLOGLN("Updating matrix from arbitray color vector");
         uint16_t indexPixel = 0;
-        for (int j = 0; j < 10; j++) {
+        for (int j = 0; j < NEOPIXEL_ROWS; j++) {
           {
-          for (int i = 0; i < 11; i++)
+          for (int i = 0; i < NEOPIXEL_COLUMNS; i++)
             {
               if (_matrix_buf.size() >= indexPixel) {
                 _pixels.SetPixelColor(_clockFace->map(i, j), _matrix_buf[indexPixel]);
@@ -215,13 +218,91 @@ void Display::runBootAnimation()
     _bootAnimations.StartAnimation(1, 3000,[this](const AnimationParam& param) { _circleAnimUpdate(param);});
 }
 
-void Display::setMatrix(std::vector<RgbColor> colorValues) {
+void Display::setMatrix(std::vector<RgbColor> colorValues)
+{
   _animations.StopAll();
-  _matrix_mode = true;
+  _mode = MATRIX;
   _clockFace->clearDisplay();
   _matrix_buf = colorValues;
 }
 
-void Display::clearMatrix() {
-  _matrix_mode = false;
+void Display::clearMatrix()
+{
+  _mode = CLOCK;
+}
+
+void Display::_displayCharacter(FontTable fontTable, char character, int scrollPosition, RgbColor color) {
+  if (scrollPosition < -fontTable.characterWidth || scrollPosition >= NEOPIXEL_COLUMNS) {
+    return;
+  }
+  // Center vertically
+  static int offsetY = (NEOPIXEL_ROWS - fontTable.characterHeight) / 2;
+  // Get byte array for this character
+  std::vector<byte> charData = FontTable::getCharData(fontTable, character);
+  // Iterate through each pixel of the character
+  if (charData.size() != fontTable.characterHeight * fontTable.characterWidth) {
+    DLOG("Character not supported (");
+    DLOG(character);
+    DLOGLN(")");
+    return;
+  }
+  for (int i = 0; i < fontTable.characterHeight; i++) {
+    for (int j = 0; j < fontTable.characterWidth; j++) {
+      int offsetX = scrollPosition + j;
+      // Only account for on-screen pixels
+      if (offsetX < NEOPIXEL_COLUMNS && offsetX >= 0) {
+        bool pixelOn = charData[i * fontTable.characterWidth + j] == 0x01;
+        _pixels.SetPixelColor(_clockFace->map(offsetX, offsetY + i), pixelOn ? color : black);
+      } 
+    }
+  }
+}
+
+void Display::scrollText(String text, RgbColor textColor, int speed, bool rightToLeft)
+{
+  DLOGLN("Ticker activated");
+  DLOGLN(text);
+
+  const FontTable fontTable = font5x5;  
+  const int letterSpacing = 1;
+  int textLength = text.length();
+  int scrollSpeed = std::min(10000, std::max(10, speed));
+  int scrollDirection = rightToLeft ? 1 : -1;
+
+  if (fontTable.characterHeight > NEOPIXEL_ROWS) {
+    DLOGLN("Font is too tall to fit the display");
+    return;
+  }
+
+  _animations.StopAll();
+  _mode = TICKER;
+
+  // Calculate total scrolling distance
+  int totalScrollDistance = (fontTable.characterWidth + letterSpacing) * textLength + NEOPIXEL_COLUMNS;
+
+  // Starting position
+  int scrollPosition = scrollDirection == 1 ? NEOPIXEL_COLUMNS - totalScrollDistance : NEOPIXEL_COLUMNS;
+
+  // Iterate through each pixel of the scrolling text
+  for (int i = 0; i <= totalScrollDistance; i++) {
+    _pixels.ClearTo(black);
+
+    for (int i = 0; i < textLength; i++) {
+      int charPos = scrollPosition + i * (fontTable.characterWidth + letterSpacing);
+      _displayCharacter(fontTable, text.charAt(i), charPos, textColor);
+    }
+
+    // Update the matrix
+    _pixels.Show();
+
+    // Update scroll position
+    scrollPosition += scrollDirection;
+
+    // Delay between frames
+    delay(scrollSpeed);
+  }
+
+  _mode = CLOCK;
+  DLOGLN("Ticker exited");
+  _update();
 }

@@ -2,6 +2,13 @@
 
 #include <vector>
 
+// The number of LEDs connected before the start of the matrix.
+#define NEOPIXEL_SIGNALS 4
+
+// Matrix dimensions.
+#define NEOPIXEL_ROWS 10
+#define NEOPIXEL_COLUMNS 11
+
 class ClockFace
 {
 public:

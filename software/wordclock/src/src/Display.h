@@ -6,6 +6,7 @@
 #include "BrightnessController.h"
 #include "ClockFace.h"
 #include "nodo.h"
+#include "Font.h"
 
 // The pin to control the matrix
 #ifndef NEOPIXEL_PIN
@@ -45,6 +46,7 @@ public:
   
   void setMatrix(std::vector<RgbColor> colorValues);
   void clearMatrix();
+  void scrollText(String text, RgbColor textColor, int speed = 100, bool rightToLeft = false);
 
 private:
   // Updates pixel color on the display.
@@ -58,7 +60,12 @@ private:
   // Overrides color to #000000 when true.
   bool _off;
 
-  bool _matrix_mode;
+  enum Mode {
+    CLOCK,
+    MATRIX,
+    TICKER
+  };
+  Mode _mode;
   std::vector<RgbColor> _matrix_buf;
   
   // Whether the display should show AM/PM information.
@@ -93,4 +100,5 @@ private:
   void _circleAnimUpdate(const AnimationParam &param);
   void _fadeAll(uint8_t darkenBy);
   void _fadeAnimUpdate(const AnimationParam &param);
+  void _displayCharacter(FontTable fontTable, char character, int scrollPosition, RgbColor color);
 };
