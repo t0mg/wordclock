@@ -43,7 +43,7 @@ This is the recommended method as it makes it easy to manage dependencies and bu
 3. Verify that the target board in `platformio.ini` matches your ESP32 hardware
 4. Build and upload
 
-**Important**: Platform IO builds and flashes multiple bin files (bootloader, partition, firmware). To merge those into a single binary for flashing separately from e.g. esptool or the OTA updater, run `pio run -t mergebin` from a PlatformIO console and look the file ending with "merged.bin" in the `.pio/build` folder.
+**Important**: Platform IO builds and flashes multiple bin files (bootloader, partition, firmware). To merge those into a single binary for flashing separately from e.g. esptool or the OTA updater, run `pio run -t mergebin` from a PlatformIO console and look for the file ending with "merged.bin" in the `.pio/build` folder.
 
 ## OTA update
 
@@ -53,7 +53,7 @@ After the firwmare has been flashed over USB once, you can use the OTA feature t
 - In PatformIO, the merged build file is located in `.pio\build\<environment name>\firmware_<environment name>_merged.bin`.
 - If you are building with Arduino IDE, use `Sketch > Export compiled Binary` to export the file.
 
-__Warning__: if the `firmware config version` displayed at the very bottom of the web interface changes, your settings will be reset. They should othewise remain.
+__Warning__: if the `firmware config version` displayed at the very bottom of the web interface changes, your settings will be reset. They should otherwise remain.
 
 ## [Deprecated] Build with Arduino IDE
 
