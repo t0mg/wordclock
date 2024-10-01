@@ -229,6 +229,7 @@ void Display::setMatrix(std::vector<RgbColor> colorValues)
 void Display::clearMatrix()
 {
   _mode = CLOCK;
+  _update();
 }
 
 void Display::_displayCharacter(FontTable fontTable, char character, int scrollPosition, RgbColor color) {
@@ -241,9 +242,6 @@ void Display::_displayCharacter(FontTable fontTable, char character, int scrollP
   std::vector<byte> charData = FontTable::getCharData(fontTable, character);
   // Iterate through each pixel of the character
   if (charData.size() != fontTable.characterHeight * fontTable.characterWidth) {
-    DLOG("Character not supported (");
-    DLOG(character);
-    DLOGLN(")");
     return;
   }
   for (int i = 0; i < fontTable.characterHeight; i++) {

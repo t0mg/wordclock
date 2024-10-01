@@ -11,6 +11,7 @@
 #include <MQTT.h>
 #include <esp_sntp.h>
 #include <string>
+#include <ArduinoJson.h>
 
 // Name of this IoT object.
 #define THING_NAME "WordClock"
@@ -647,6 +648,7 @@ bool Iot::connectMQTT_()
   mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/switch/set");
   mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/matrix/set");
   mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/matrix/unset");
+  mqtt_client_.subscribe(mqtt_topic_prefix_ + "/light/text/set");
 
   // Update availability.
   mqtt_client_.publish(mqtt_topic_prefix_ + "/availability", "online", true /* retained */, 0 /* QoS */);
@@ -730,7 +732,19 @@ void Iot::mqttMessageReceived_(String &topic, String &payload)
   }
   else if (topic == mqtt_topic_prefix_ + "/light/text/set")
   {
-    display_->scrollText(payload, display_->getColor());
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, payload);
+    if (error) {
+      DLOG("deserializeJson() failed: ");
+      DLOGLN(error.f_str());
+      return;
+    }
+    const char *text = doc["text"];
+    const char *color = doc["color"];
+    RgbColor col = Palette::stringToRgb(String(color), display_->getColor()).at(0);
+    int speed = doc["delay"];
+    bool rtl = doc["rtl"].as<int>() == 1;
+    display_->scrollText(text, col, speed, rtl);
   }
 }
 
