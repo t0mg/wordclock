@@ -247,7 +247,7 @@ The feature supports a few optional parameters:
 
 #### API
 
-When the API endpoint is enabled in the [settings](#api), you can hit `http://<clock IP>/api/text/set/<custom text>` and pass the optional settings as query parameters. For example to scroll the message `Hello from MQTT :)` in red color, scrolling from right to left with 100ms delay, you'd do:
+When the API endpoint is enabled in the [settings](#api), you can hit `http://<clock IP>/api/text/set/<custom text>` and pass the optional settings as query parameters. For example to scroll the message `Hello from API :)` in red color, scrolling backwards with 100ms delay, you'd do:
 
 ```
 http://<clock IP>/api/text/set/Hello%20from%20API%20%3A)?color=3&delay=100&rtl=1
