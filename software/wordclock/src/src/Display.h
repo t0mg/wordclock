@@ -46,7 +46,7 @@ public:
   
   void setMatrix(std::vector<RgbColor> colorValues);
   void clearMatrix();
-  void scrollText(String text, RgbColor textColor, int speed = 100, bool rightToLeft = false);
+  void scrollText(String text, RgbColor textColor, int speed = 200, bool rightToLeft = false);
 
 private:
   // Updates pixel color on the display.

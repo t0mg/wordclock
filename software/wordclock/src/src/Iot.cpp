@@ -740,9 +740,19 @@ void Iot::mqttMessageReceived_(String &topic, String &payload)
       return;
     }
     const char *text = doc["text"];
+    if (text == nullptr) {
+      DLOGLN("no text in payload");
+      return;
+    }
     const char *color = doc["color"];
-    RgbColor col = Palette::stringToRgb(String(color), display_->getColor()).at(0);
+    RgbColor col = display_->getColor();
+    if (color != nullptr) {
+      col = Palette::stringToRgb(String(color), display_->getColor()).at(0);
+    }
     int speed = doc["delay"];
+    if (speed == 0) {
+      speed = 200;
+    }
     bool rtl = doc["rtl"].as<int>() == 1;
     display_->scrollText(text, col, speed, rtl);
   }
