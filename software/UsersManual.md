@@ -101,6 +101,7 @@ When enabled, the following routes are activated:
 - `http://<clock IP>/api/color/get` -> returns the HTML code of the currenly set color
 - `http://<clock IP>/api/matrix/set/<payload>` -> activates Paint mode and displays the payload, see [Paint](#paint) for details
 - `http://<clock IP>/api/matrix/unset` -> exits Paint mode and returns to displaying time
+- `http://<clock IP>/api/text/set` -> scrolls a custom text, then returns to displaying time, see [Text scroller](#text-scroller) for details
 
 ## MQTT client
 
@@ -123,6 +124,9 @@ Topics are prefixed with the name defined as `Clock name` in the web UI settings
 #### Matrix paint (experimental)
 - `wordclock/light/matrix/set` -> activates Paint mode and displays the payload, a 110 characters string using a preset palette, see [Paint](#paint)
 - `wordclock/light/matrix/unset` -> exits Paint mode and returns to displaying time
+
+#### Text scroller (experimental)
+- `wordclock/light/text/set` -> activates Text Scroller mode and displays the payload text, see [Text Scroller](#text-scroller)
 
 ### Home Assistant configuration
 
@@ -224,6 +228,40 @@ The payload is a string of 110 characters, one for each LED/pixel in the 11x10 m
 
 - `0` to `f` representing the hexadecimal index of one of the 16 colors from the preset palette,
 - `x` representing whatever color is currently selected for displaying the time.
+
+## Text scroller
+
+__Note:__ This is an experimental feature. Parameters might change.
+
+This feature scrolls a text on the display (only ASCII characters are supported) then goes back to displaying the time. It accepts a string of any length between 1 and 200 characters.
+
+It can be used from the [API](#api-1) and from [MQTT](#mqtt-client). Both options support the same parameters.
+
+#### Parameters
+
+The feature supports a few optional parameters:
+
+- `color` should match a character code from the [Paint](#paint) palette, i.e. `0` to `f` or `x`, see [payload format](#payload-format). Defaults to the current color (`x`).
+- `delay` define the time in milliseconds between each frame. The lower the number, the faster the scroll speed. Defaults to 200.
+- `rtl` if set to `1`, scroll from right to left. Defaults to left to right.
+
+#### API
+
+When the API endpoint is enabled in the [settings](#api), you can hit `http://<clock IP>/api/text/set/<custom text>` and pass the optional settings as query parameters. For example to scroll the message `Hello from MQTT :)` in red color, scrolling from right to left with 100ms delay, you'd do:
+
+```
+http://<clock IP>/api/text/set/Hello%20from%20API%20%3A)?color=3&delay=100&rtl=1
+```
+
+Note: the API endpoint can handle URI-encoded characters.
+
+#### MQTT topic
+
+The MQTT command topic is `wordclock/light/text/set` and its paylod is expected to be a JSON string containing the `text` value to scroll alongside any supported optional parameters. For example:
+
+```json
+{"text":"Hello from MQTT :)","color":"3","delay":100,"rtl":1}
+```
 
 ## Credits
 

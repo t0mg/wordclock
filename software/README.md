@@ -11,7 +11,7 @@ For detailed usage instructions, please refer to the [User's Manual](UsersManual
 - Can use network time (NTP) or manual setting
 - Interface offers various other options such as display color, light sensor sensitivity, and [OTA firmware update](#ota-update)
 - [MQTT client](UsersManual.md#mqtt-client) to control the clock via home automation platforms such as [Home Assistant](https://www.home-assistant.io/)
-- Go beyond time display with an experimental web interface for real-time [painting](UsersManual.md#paint)
+- Go beyond time display with [text scrolling](UsersManual.md#text-scroller) and an experimental web interface for real-time [painting](UsersManual.md#paint)
 
 
 ## Demo video
