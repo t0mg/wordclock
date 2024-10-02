@@ -267,7 +267,12 @@ void Iot::updateClockFromParams_()
       parseColorValue(color_value_, RgbColor(255, 255, 255)));
   display_->setShowAmPm(parseBooleanValue(show_ampm_value_));
   display_->setSensorSentivity(parseNumberValue(ldr_sensitivity_value_, 0, 10, 5));
+  
+  updateClockRTCFromParams_();
+}
 
+void Iot::updateClockRTCFromParams_()
+{
   if (parseBooleanValue(ntp_enabled_value_))
   {
     maybeSetRTCfromNTP_();
@@ -610,6 +615,7 @@ void Iot::handleConfigSaved_()
   DLOGLN("Configuration was updated.");
   if (parseBooleanValue(mqtt_enabled_value_))
   {
+    updateClockRTCFromParams_();
     needs_reboot_ = true;
   }
   else

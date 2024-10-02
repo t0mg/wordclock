@@ -36,6 +36,8 @@ private:
   void clearTransientParams_();
   // Updates word clock's state to match the current configuration values.
   void updateClockFromParams_();
+  // Updates the RTC based on current configuration
+  void updateClockRTCFromParams_();
   // Checks for NTP setting and if enabled, attempts to update the RTC.
   void maybeSetRTCfromNTP_();
   // Sets the RTC from manual input
