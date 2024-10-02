@@ -233,17 +233,14 @@ void Display::clearMatrix()
 }
 
 void Display::_displayCharacter(FontTable fontTable, char character, int scrollPosition, RgbColor color) {
-  if (scrollPosition < -fontTable.characterWidth || scrollPosition >= NEOPIXEL_COLUMNS) {
-    return;
-  }
-  // Center vertically
-  static int offsetY = (NEOPIXEL_ROWS - fontTable.characterHeight) / 2;
   // Get byte array for this character
   std::vector<byte> charData = FontTable::getCharData(fontTable, character);
   // Iterate through each pixel of the character
   if (charData.size() != fontTable.characterHeight * fontTable.characterWidth) {
     return;
   }
+  // Center vertically
+  static int offsetY = (NEOPIXEL_ROWS - fontTable.characterHeight) / 2;
   for (int i = 0; i < fontTable.characterHeight; i++) {
     for (int j = 0; j < fontTable.characterWidth; j++) {
       int offsetX = scrollPosition + j;
@@ -276,7 +273,8 @@ void Display::scrollText(String text, RgbColor textColor, int speed, bool rightT
   _mode = TICKER;
 
   // Calculate total scrolling distance
-  int totalScrollDistance = (fontTable.characterWidth + letterSpacing) * textLength + NEOPIXEL_COLUMNS;
+  const int letterWidth = fontTable.characterWidth + letterSpacing;
+  const int totalScrollDistance = letterWidth * textLength + NEOPIXEL_COLUMNS;
 
   // Starting position
   int scrollPosition = scrollDirection == 1 ? NEOPIXEL_COLUMNS - totalScrollDistance : NEOPIXEL_COLUMNS;
@@ -285,9 +283,11 @@ void Display::scrollText(String text, RgbColor textColor, int speed, bool rightT
   for (int i = 0; i <= totalScrollDistance; i++) {
     _pixels.ClearTo(black);
 
-    for (int i = 0; i < textLength; i++) {
-      int charPos = scrollPosition + i * (fontTable.characterWidth + letterSpacing);
-      _displayCharacter(fontTable, text.charAt(i), charPos, textColor);
+    for (int j = 0; j < textLength; j++) {
+      int charPos = scrollPosition + j * letterWidth;
+      if (charPos >= -fontTable.characterWidth && charPos < NEOPIXEL_COLUMNS) {
+      _displayCharacter(fontTable, text.charAt(j), charPos, textColor);
+      }
     }
 
     // Update the matrix
