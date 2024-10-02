@@ -47,10 +47,10 @@ This is the recommended method as it makes it easy to manage dependencies and bu
 
 ## OTA update
 
-After the firwmare has been flashed over USB once, you can use the OTA feature to flash further updates: build the new binary file, then open the web portal of your clock, click the `Firmware update` link at the bottom and upload the new (merged, see above) `.bin` file.
+After the firwmare has been flashed over USB once, you can use the OTA feature to flash further updates: build the new binary file, then open the web portal of your clock, click the `Firmware update` link at the bottom and upload the new `firmware.bin` file. For OTA we don't use the "merged" version mentioned in the previous section.
 
 - Pre-built releases can be found [here](https://github.com/t0mg/wordclock/releases).
-- In PatformIO, the merged build file is located in `.pio\build\<environment name>\firmware_<environment name>_merged.bin`.
+- In PatformIO, the build file is located in `.pio\build\<environment name>\firmware.bin`.
 - If you are building with Arduino IDE, use `Sketch > Export compiled Binary` to export the file.
 
 __Warning__: if the `firmware config version` displayed at the very bottom of the web interface changes, your settings will be reset. They should otherwise remain.
