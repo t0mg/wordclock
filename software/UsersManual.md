@@ -233,7 +233,7 @@ The payload is a string of 110 characters, one for each LED/pixel in the 11x10 m
 
 __Note:__ This is an experimental feature. Parameters might change.
 
-This feature scrolls a text on the display (only ASCII characters are supported) then goes back to displaying the time. It accepts a string of any length between 1 and 200 characters.
+This feature scrolls a text on the display (only ASCII characters are supported) then goes back to displaying the time ([demo video](https://www.youtube.com/watch?v=WIv3Row_7ro)). It accepts a string of any length between 1 and 200 characters.
 
 It can be used from the [API](#api-1) and from [MQTT](#mqtt-client). Both options support the same parameters.
 
