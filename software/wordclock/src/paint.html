@@ -101,7 +101,8 @@
       flex-wrap: wrap;
     }
 
-    .palette button, #custom {
+    .palette button,
+    #custom {
       border: none;
       width: 50px;
       height: 50px;
@@ -117,7 +118,7 @@
 </head>
 
 <body>
-  <h1><img class="logo" src="logo.svg"/> Paint <sup>beta</sup></h1>
+  <h1><img class="logo" src="logo.svg" /> Paint <sup>beta</sup></h1>
   <canvas width="11" height="10"></canvas>
   <section>
     <div class="tools">
@@ -219,7 +220,7 @@
             // Add a bit of cooldown before next call.
             setTimeout(() => {
               pending = false;
-              fetchNext();            
+              fetchNext();
             }, 100);
           });
         nextPayload = null;
@@ -263,9 +264,10 @@
       pdiv.appendChild(b);
     });
 
+    let customColor = "#ffffff";
     getCustomColor = async () => {
       const res = await fetch("/api/color/get");
-      const customColor = await res.text();
+      customColor = await res.text();
       const b = document.getElementById("custom");
       b.style.backgroundColor = `${customColor}`;
       document.querySelector("sup").style.color = `${customColor}`;
@@ -276,6 +278,71 @@
       };
     }
     getCustomColor();
+
+    const updateCanvasFromText = () => {
+      const str = textarea.value.toLowerCase();
+      let strOut = "";
+      let originalColor = colorPicker.value;
+      context.fillStyle = `#0000`;
+      context.fillRect(0, 0, 11, 10);
+      for (let i = 0; i < 110; i++) {
+        const char = str[i] || 'f';
+        let colIdx = parseInt(char, 16);
+        strOut += isNaN(colIdx) ? "x" : char;
+        const col = isNaN(colIdx) ? customColor : "#" + palette[colIdx];
+        context.fillStyle = col;
+        context.fillRect(i % 11, Math.floor(i / 11), 1, 1);
+      }
+      context.fillStyle = originalColor;
+      fetchNext(strOut);
+    }
+
+    textarea.addEventListener("input", updateCanvasFromText);
+
+    // Little bonus :)
+    const beep = (b = false) => {
+      // https://bu-kurokky.github.io/mytest/beep/nes.html
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioContext = new AudioContext();
+      const gainNode = audioContext.createGain();
+      gainNode.connect(audioContext.destination);
+      gainNode.gain.value = 0.1;
+      const oscillator = audioContext.createOscillator();
+      oscillator.connect(gainNode);
+      if (b) {
+        let hzs = [523.251, 391.995, 523.251, 659.255, 783.99, 1046.502, 783.99, 415.304, 523.251, 622.253, 830.609, 622.253, 830.609, 1046.502, 1244.507, 1479.977, 1244.507, 466.163, 587.329, 698.456, 932.327, 698.456, 932.327, 1174.659, 1396.912, 1864.655, 1396.912];
+        oscillator.type = "sawtooth";
+        let i = 0;
+        for (const hz of hzs) {
+          let time = i * 0.03;
+          oscillator.frequency.setValueAtTime(hz, audioContext.currentTime + time);
+          i++;
+        }
+        oscillator.start();
+        oscillator.stop(0.8);
+      } else {
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(987.766, audioContext.currentTime);//B
+        oscillator.frequency.setValueAtTime(1318.51, audioContext.currentTime + 0.08);//E
+        oscillator.start();
+        oscillator.stop(.5);
+      }
+    };
+    let cnt = 0;
+    let to;
+    document.querySelector('.logo').addEventListener("click", () => {
+      cnt++
+      window.clearTimeout(to);
+      if (cnt == 8) {
+        cnt = 0;
+        beep(true);
+        textarea.value = "ff33333fffff3333333333faaaabbfbffaababbbfbbbaabaabbbabbaaabbbbaaaaffbbbbbbbbfff336333ffff333633633333331661333";
+        updateCanvasFromText();
+      } else {
+        beep();
+        to = window.setTimeout(() => { cnt = 0 }, 500);
+      }
+    });
   </script>
 </body>
 
