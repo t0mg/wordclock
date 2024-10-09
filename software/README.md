@@ -22,9 +22,11 @@ For detailed usage instructions, please refer to the [User's Manual](UsersManual
 
 If you are not interested in modifying the source code, you can find prebuilt binaries [here](https://github.com/t0mg/wordclock/releases) that can be flashed on your ESP32 with [esptool.py](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/flashing-firmware.html) or even directly from Chrome browser with [esptool-js](https://espressif.github.io/esptool-js/)
 
+Use the `firmware_esp32dev` files if you have a custom built clock based on the ESP32 Dev board, or the `firmware_nodo` files if you purchased a [nodo clock kit](https://www.nodo-shop.nl/en/52-wordclock) (which is powered by an ESP32-C3 chip and has the LEDs laid out in a different order).
+
 ### Flashing with esptool-js
 
-- Download the latest "merged.bin" firmware for your platform from the [release page](https://github.com/t0mg/wordclock/releases)
+- Download the latest `merged.bin` firmware for your platform from the [release page](https://github.com/t0mg/wordclock/releases)
 - Open [esptool-js](https://espressif.github.io/esptool-js/)
 - Connect your ESP32 over USB
 - Click "Connect" and select the correct COM port
