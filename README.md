@@ -37,6 +37,17 @@ Building the clock from scratch involves mostly laser cutting and soldering. It 
 
 You can oviously choose to customize any of the provided templates to eg create a different faceplate, or adapt the frame to your specific needs (change the LED layout, add extra sensors, etc).
 
+#### Nodo clock
+
+Alternatively, [nodo-shop.nl](https://nodo-shop.nl) developed and sells [a kit](https://www.nodo-shop.nl/en/52-wordclock) that is fully compatible with the software side of this project. 
+
+The kit includes a 3D-printed faceplate (EN, FR and NL versions available) and custom circuit board, is very simple to assemble and requires no soldering.
+
+<p align="center">
+<img src="images/nodo.jpg" height="300">
+<img src="images/nodo-pcb.jpg" height="300">
+</p>
+
 ### Software
 
 The provided [source code](software/README.md) is using [PlatformIO](https://platformio.org/) and Arduino IDE. Here's a [demo video](https://youtu.be/WF_X5soabm0) (from v1.0, does not show all current features).
