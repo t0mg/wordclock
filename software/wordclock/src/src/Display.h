@@ -1,5 +1,6 @@
 #pragma once
 
+#include <IotWebConf.h>
 #include <NeoPixelAnimator.h>
 #include <NeoPixelBrightnessBus.h>
 
@@ -46,7 +47,14 @@ public:
   
   void setMatrix(std::vector<RgbColor> colorValues);
   void clearMatrix();
-  void scrollText(String text, RgbColor textColor, int speed = 200, bool rightToLeft = false);
+  void scrollText(IotWebConf &iwc, String text, RgbColor textColor, int speed = 200, bool rightToLeft = false);
+  enum Mode {
+    BOOT,
+    CLOCK,
+    MATRIX,
+    TICKER
+  };
+  Mode getMode() { return _mode; }
 
 private:
   // Updates pixel color on the display.
@@ -60,11 +68,6 @@ private:
   // Overrides color to #000000 when true.
   bool _off;
 
-  enum Mode {
-    CLOCK,
-    MATRIX,
-    TICKER
-  };
   Mode _mode;
   std::vector<RgbColor> _matrix_buf;
   

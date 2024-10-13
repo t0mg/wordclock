@@ -18,6 +18,8 @@ int ClockFace::pixelCount()
 void ClockFace::clearDisplay(void)
 {
   std::fill(_state.begin(), _state.end(), false);
+  _hour = NULL;
+  _minute = NULL;
 }
 
 ClockFace::ClockFace(LightSensorPosition position) : _hour(-1), _minute(-1), _second(-1),
@@ -177,12 +179,12 @@ bool FrenchClockFace::stateForTime(int hour, int minute, int second, bool show_a
   {
     return false;
   }
-  _hour = hour;
-  _minute = minute;
 
   DLOGLN("update state fr");
 
   clearDisplay();
+  _hour = hour;
+  _minute = minute;
 
   int leftover = minute % 5;
   minute = minute - leftover;
@@ -391,13 +393,13 @@ bool EnglishClockFace::stateForTime(int hour, int minute, int second, bool show_
   {
     return false;
   }
-  _hour = hour;
-  _minute = minute;
-  _show_ampm = show_ampm;
 
   DLOGLN("update state");
 
   clearDisplay();
+  _hour = hour;
+  _minute = minute;
+  _show_ampm = show_ampm;
 
   int leftover = minute % 5;
   minute = minute - leftover;
@@ -604,12 +606,12 @@ bool DutchClockFace::stateForTime(int hour, int minute, int second,
   {
     return false;
   }
-  _hour = hour;
-  _minute = minute;
 
   DLOGLN("update state");
 
   clearDisplay();
+  _hour = hour;
+  _minute = minute;
 
   int leftover = minute % 5;
   minute = minute - leftover;
@@ -803,13 +805,13 @@ bool ItalianClockFace::stateForTime(int hour, int minute, int second, bool show_
   {
     return false;
   }
-  _hour = hour;
-  _minute = minute;
 
   DLOGLN("update state");
 
   // Reset the board to all black
   clearDisplay();
+  _hour = hour;
+  _minute = minute;
 
   int leftover = minute % 5;
   minute = minute - leftover;

@@ -44,6 +44,8 @@ private:
   void setRTCfromConfig_();
   // Connects to MQTT server.
   bool connectMQTT_();
+  // Sends a 403 on the web server if the API is not enabled.
+  bool checkAPIEnabledOr403_();
   // Toggles the display if payload is "ON" or "OFF".
   void toggleDisplay_(String payload);
   // Convenience method to format RgbColor for MQTT publication.

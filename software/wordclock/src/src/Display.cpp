@@ -13,6 +13,7 @@ Display::Display(ClockFace* clockFace, uint8_t pin)
 
 void Display::setup()
 {
+  _mode = CLOCK;
   _pixels.Begin();
   _brightnessController.setup();
 }
@@ -109,8 +110,7 @@ void Display::_update(int animationSpeed)
 
 void Display::updateForTime(int hour, int minute, int second, int animationSpeed)
 {
-
-  if (_bootAnimations.IsAnimating() || !_clockFace->stateForTime(hour, minute, second, _show_ampm))
+  if (_mode != CLOCK || !_clockFace->stateForTime(hour, minute, second, _show_ampm))
   {
     return; // Nothing to update.
   }
@@ -202,7 +202,8 @@ void Display::_fadeAnimUpdate(const AnimationParam& param)
       else 
       {
         DLOGLN("Boot animation complete");
-        _update(200);
+        _mode = CLOCK;
+        _update(100);
       }
     }
 }
@@ -210,6 +211,7 @@ void Display::_fadeAnimUpdate(const AnimationParam& param)
 void Display::runBootAnimation()
 {
     DLOGLN("Starting boot animation");
+    _mode = BOOT;
     DLOGLN("Testing red");
     _circleCenterX = 5;
     _circleCenterY = 10;
@@ -229,7 +231,7 @@ void Display::setMatrix(std::vector<RgbColor> colorValues)
 void Display::clearMatrix()
 {
   _mode = CLOCK;
-  _update();
+  _update(30);
 }
 
 void Display::_displayCharacter(FontTable fontTable, char character, int scrollPosition, RgbColor color) {
@@ -253,7 +255,7 @@ void Display::_displayCharacter(FontTable fontTable, char character, int scrollP
   }
 }
 
-void Display::scrollText(String text, RgbColor textColor, int speed, bool rightToLeft)
+void Display::scrollText(IotWebConf &iwc, String text, RgbColor textColor, int speed, bool rightToLeft)
 {
   DLOGLN("Ticker activated");
   DLOGLN(text);
@@ -297,7 +299,7 @@ void Display::scrollText(String text, RgbColor textColor, int speed, bool rightT
     scrollPosition += scrollDirection;
 
     // Delay between frames
-    delay(scrollSpeed);
+    iwc.delay(scrollSpeed);
   }
 
   _mode = CLOCK;

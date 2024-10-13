@@ -1,12 +1,13 @@
 #pragma once
 
 // Define debug to turn on debug logging.
+// The flag is normally set by the selected PlatformIO environment.
 // #define DEBUG 1
 
 // DLOG and DLOGLN are equivalent of Serial.print and println, but turned off by
 // the DEBUG macro absence.
-// DCHECK only log if the first parameter is false.
-// setupLogin() must be called from setup() for everything to work.
+// DCHECK only logs if the first parameter is false.
+// setupLogging() must be called from setup() for everything to work.
 
 #if defined(DEBUG)
 
