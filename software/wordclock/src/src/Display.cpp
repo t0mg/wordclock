@@ -260,7 +260,7 @@ void Display::scrollText(IotWebConf &iwc, String text, RgbColor textColor, int s
   DLOGLN("Ticker activated");
   DLOGLN(text);
 
-  const FontTable fontTable = font5x5;  
+  const FontTable fontTable = font5x7;  
   const int letterSpacing = 1;
   int textLength = text.length();
   int scrollSpeed = std::min(10000, std::max(10, speed));
