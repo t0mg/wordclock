@@ -18,8 +18,8 @@ int ClockFace::pixelCount()
 void ClockFace::clearDisplay(void)
 {
   std::fill(_state.begin(), _state.end(), false);
-  _hour = NULL;
-  _minute = NULL;
+  _hour = -1;
+  _minute = -1;
 }
 
 ClockFace::ClockFace(LightSensorPosition position) : _hour(-1), _minute(-1), _second(-1),
