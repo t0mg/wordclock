@@ -235,8 +235,8 @@ void Display::clearMatrix()
 }
 
 void Display::_displayCharacter(FontTable fontTable, char character, int scrollPosition, RgbColor color) {
-  // Get byte array for this character
-  std::vector<byte> charData = FontTable::getCharData(fontTable, character);
+  // Get bit array for this character
+  std::vector<bool> charData = FontTable::getCharData(fontTable, character);
   // Iterate through each pixel of the character
   if (charData.size() != fontTable.characterHeight * fontTable.characterWidth) {
     return;
@@ -248,8 +248,7 @@ void Display::_displayCharacter(FontTable fontTable, char character, int scrollP
       int offsetX = scrollPosition + j;
       // Only account for on-screen pixels
       if (offsetX < NEOPIXEL_COLUMNS && offsetX >= 0) {
-        bool pixelOn = charData[i * fontTable.characterWidth + j] == 0x01;
-        _pixels.SetPixelColor(_clockFace->map(offsetX, offsetY + i), pixelOn ? color : black);
+        _pixels.SetPixelColor(_clockFace->map(offsetX, offsetY + i), charData[i * fontTable.characterWidth + j] ? color : black);
       } 
     }
   }
