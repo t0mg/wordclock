@@ -622,6 +622,7 @@ void Iot::handleConfigSaved_()
   }
   else
   {
+    firstWifiConnection_ = true;
     updateClockFromParams_();
   }
 }
@@ -629,7 +630,7 @@ void Iot::handleConfigSaved_()
 void Iot::handleWifiConnection_()
 {
   DLOGLN("Wifi connected.");
-  if (parseBooleanValue(boot_animation_enabled_value_))
+  if (parseBooleanValue(boot_animation_enabled_value_) && firstWifiConnection_)
   {
     scrollText_("WiFi: " + WiFi.SSID() + " IP: " + WiFi.localIP().toString(), RgbColor(255,255,255), 150, false);
   }
@@ -638,6 +639,7 @@ void Iot::handleWifiConnection_()
     needs_mqtt_connect_ = true;
   }
   maybeSetRTCfromNTP_();
+  firstWifiConnection_ = false;
 }
 
 bool Iot::connectMQTT_()

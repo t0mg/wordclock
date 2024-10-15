@@ -64,6 +64,8 @@ private:
   void handleConfigSaved_();
   // Handles wifi connexion success.
   void handleWifiConnection_();
+  // Keep track of he first wifi connection callback.
+  bool firstWifiConnection_ = true;
   // Connects to MQTT server using provided credentials.
   bool connectMqttOptions_();
   // Handles incoming MQTT messages.
