@@ -8,7 +8,7 @@ Import("env", "projenv")
 
 board_config = env.BoardConfig()
 firmware_bin = "${BUILD_DIR}/${PROGNAME}.bin"
-merged_bin = os.path.join(env.get('BUILD_DIR'), env.get('PROGNAME') + "_" + env.get('PIOENV') + "_merged.bin")
+merged_bin = os.path.join(env.get('BUILD_DIR'), env.get('PROGNAME') + "_merged.bin")
 
 
 def merge_bin_action(source, target, env):
