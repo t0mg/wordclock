@@ -2,6 +2,9 @@ document.addEventListener(
     'DOMContentLoaded',
     function (e) {
 
+        // Move version number at the bottom.
+        document.querySelector("body>div>div:last-child").appendChild(document.querySelector("aside"));
+
         // Move network session at the bottom if SSID is set.
         if(!!document.getElementById("iwcWifiSsid")?.value) {
           const f = document.getElementById("iwcSys");

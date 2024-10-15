@@ -34,6 +34,10 @@
 #define MQTT_LDR_PUBLISH_INTERVAL 15000
 // Max accepted lenghth of text to scroll.
 #define TICKER_MAX_LENGTH 200
+// Versioning pulled from git by versioning.py script.
+#ifndef AUTO_VERSION
+#define AUTO_VERSION "Unknown"
+#endif
 
 namespace
 {
@@ -57,7 +61,7 @@ namespace
   extern const uint8_t style_css_end[] asm("_binary_src_style_css_end");
 
   // Custom HTML element will be added at the beginning of the body element.
-  const char CUSTOMHTML_BODY_INNER[] PROGMEM = "<header><div class=\"logoContainer\"><img class=\"logo\" src=\"logo.svg\"/></div></header>\n";
+  const char CUSTOMHTML_BODY_INNER[] PROGMEM = "<header><div class=\"logoContainer\"><img class=\"logo\" src=\"logo.svg\"/></div></header><aside>Firmware version " AUTO_VERSION "</aside>\n";
 
   class CustomHtmlFormatProvider : public iotwebconf::HtmlFormatProvider
   {

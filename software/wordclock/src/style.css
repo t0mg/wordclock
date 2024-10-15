@@ -81,7 +81,8 @@ div {
 }
 
 body>div>form,
-body>div>div {
+body>div>div,
+aside {
   display: none !important;
 }
 
@@ -94,7 +95,8 @@ body>div:has(> form)::after {
 }
 
 body.ready>div>form,
-body.ready>div>div {
+body.ready>div>div,
+body.ready aside {
   display: block !important;
 }
 
@@ -209,6 +211,6 @@ form+div {
 }
 
 body>div>div:last-child {
-  margin-top: -20px;
+  margin-top: -36px;
   float: right;
 }
