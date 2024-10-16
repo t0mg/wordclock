@@ -636,7 +636,7 @@ void Iot::handleWifiConnection_()
   DLOGLN("Wifi connected.");
   if (parseBooleanValue(boot_animation_enabled_value_) && firstWifiConnection_)
   {
-    scrollText_("WiFi: " + WiFi.SSID() + " IP: " + WiFi.localIP().toString(), RgbColor(255,255,255), 150, false);
+    scrollText_("WiFi: " + WiFi.SSID() + " IP: " + WiFi.localIP().toString(), WHITE, 150, false);
   }
   if (parseBooleanValue(mqtt_enabled_value_))
   {
