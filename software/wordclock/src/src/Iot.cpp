@@ -361,7 +361,7 @@ void Iot::setup()
     web_server_.send(HTTP_OK, "image/svg+xml", (char *)logo_svg_start);
   });
 
-  web_server_.on(UriBraces("/api/text/{}"), [this]() {
+  web_server_.on(UriBraces("/api/text/set/{}"), [this]() {
     if (checkAPIEnabledOr403_()) {
       RgbColor textColor = web_server_.arg("color") != nullptr ? Palette::stringToRgb(web_server_.arg("color").substring(0,1), display_->getColor()).at(0) : display_->getColor();
       int scrollSpeed =  web_server_.arg("delay") != nullptr ? web_server_.arg("delay").toInt() : 150;
