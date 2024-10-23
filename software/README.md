@@ -18,23 +18,24 @@ For detailed usage instructions, please refer to the [User's Manual](UsersManual
 
 [Here's a video](https://youtu.be/WF_X5soabm0) showing the Wordclock with 1.0 firmware and its web interface in action. New features were added since, such as MQTT and Paint.
 
+## Flashing over USB with the Wordclock Flasher utility
+
+[Wordclock Flasher](https://t0mg.github.io/wordclock-flasher/) is a web based companion tool that can be used to flash the Wordclock over USB with a prebuilt release firmware.
+
+If you have not flashed your clock before, it is the fastest and easiest way to get there. Once you have flashed your device for the first time, the recommended path for upgrading is to use [OTA updates](#ota-update).
+
+### Wordclock Flasher instructions
+- Head over to the [Wordclock Flasher website](https://t0mg.github.io/wordclock-flasher/) using Chrome, Edge or another [Web Serial compatible browser](https://caniuse.com/web-serial)
+- Press the `CONNECT` button, a system dialog appears to select a serial interface
+- Connect your Wordclock to your computer over USB and a new entry should show up in the dialog. Select that and confirm
+- The interface should identify your clock based on the chip it uses ([original DIY project](../README.md#hardware), or Nodo kit from [nodo-shop.nl](https://www.nodo-shop.nl/en/52-wordclock)) and display a list of available firmware files
+- Click `FLASH`
+
 ## Release binaries
 
 If you are not interested in modifying the source code, you can find prebuilt binaries [here](https://github.com/t0mg/wordclock/releases) that can be flashed on your ESP32 with [esptool.py](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/flashing-firmware.html) or even directly from Chrome browser with [esptool-js](https://espressif.github.io/esptool-js/)
 
 Use the `firmware_esp32dev` files if you have a custom built clock based on the ESP32 Dev board, or the `firmware_nodo` files if you purchased a [nodo clock kit](https://www.nodo-shop.nl/en/52-wordclock) (which is powered by an ESP32-C3 chip and has the LEDs laid out in a different order).
-
-### Flashing with esptool-js
-
-- Download the latest `merged.bin` firmware for your platform from the [release page](https://github.com/t0mg/wordclock/releases)
-- Open [esptool-js](https://espressif.github.io/esptool-js/)
-- Connect your ESP32 over USB
-- Click "Connect" and select the correct COM port
-- Click "Erase Flash" and let it do its thing
-- Set Flash Address to 0
-- Pick the file you downloaded
-- Click "Program" and wait for the operation to complete
-- Profit
 
 ## Build with PlatformIO
 
