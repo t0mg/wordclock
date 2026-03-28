@@ -134,19 +134,19 @@ Below is an example configuration for Home Assistant using [light](https://www.h
 
 ```yaml
 mqtt:
-  - light:
-      name: "Wordclock"
-      availability_topic: "wordclock/availability"
-      state_topic: "wordclock/light/switch"
-      command_topic: "wordclock/light/switch/set"
-      rgb_state_topic: "wordclock/light/color"
-      rgb_command_topic: "wordclock/light/color/set"
-      qos: 0
-      optimistic: false
-  - sensor:
-      name: "Light sensor"
-      availability_topic: "wordclock/availability"
-      state_topic: "wordclock/sensor/ldr"
+  light:
+      - name: "Wordclock"
+        availability_topic: "wordclock/availability"
+        state_topic: "wordclock/light/switch"
+        command_topic: "wordclock/light/switch/set"
+        rgb_state_topic: "wordclock/light/color"
+        rgb_command_topic: "wordclock/light/color/set"
+        qos: 0
+        optimistic: false
+  sensor:
+      - name: "Wordclock Light sensor"
+        availability_topic: "wordclock/availability"
+        state_topic: "wordclock/sensor/ldr"
 ```
 
 Entities can then be arranged in a dashboard card like this one:
