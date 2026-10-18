@@ -60,9 +60,9 @@ Enables a non password-protected [API](#api-1) and experimental [paint](#paint) 
 
 ### MQTT
 
-You can enable the MQTT client and configure your server's adress, login and password here. For more details on this feature, see the [dedicated section below](#mqtt-client).
+You can enable the MQTT client and configure your server's address, port (default 1883), login and password here. You can use the **⚡ Test MQTT Connection** button directly in the web UI to verify connectivity and view detailed diagnostic error codes without having to reboot the clock. For more details on this feature, see the [dedicated section below](#mqtt-client).
 
-**Note:** When this is enabled, any configuration changes will cause a reboot of the clock. Therefore it is recommended to turn it off when playing with other settings in order to avoid having to wait for the clock to reboot and reconnect to your WiFi every time.
+**Note:** When this is enabled, saving configuration changes will cause a reboot of the clock. Therefore it is recommended to turn it off when playing with other settings in order to avoid having to wait for the clock to reboot and reconnect to your WiFi every time.
 
 ## Connecting to a WiFi network
 
@@ -108,6 +108,8 @@ When enabled, the following routes are activated:
 MQTT is a lightweight publish-subscribe protocol designed for resource-constrained devices and low-bandwidth networks, commonly used in IoT applications. MQTT clients talk via an MQTT broker (see here for [Home Assistant](https://www.home-assistant.io/integrations/mqtt/) instructions).
 
 The clock's MQTT client can be enabled and configured from the web UI. Note that the clock will reboot after changing any setting if MQTT is enabled.
+
+Use the **⚡ Test MQTT Connection** button to validate your broker settings in real-time before saving. It reports explicit status information (e.g. timeout / network firewall issue, bad username/password, connection refused).
 
 Topics are prefixed with the name defined as `Clock name` in the web UI settings (but converted to lowercase and with spaces removed). The default prefix is therefore `wordclock`.
 

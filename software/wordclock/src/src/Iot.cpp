@@ -19,7 +19,7 @@
 #define INITIAL_WIFI_AP_PASSWORD "password"
 // IoT configuration version. Change this whenever IotWebConf object's
 // configuration structure changes.
-#define CONFIG_VERSION "6"
+#define CONFIG_VERSION "7"
 // Port used by the IotWebConf HTTP server.
 #define WEB_SERVER_PORT 80
 // Default timezone index from Timezones.h (Paris).
@@ -60,8 +60,16 @@ namespace
   extern const uint8_t style_css_start[] asm("_binary_src_style_css_start");
   extern const uint8_t style_css_end[] asm("_binary_src_style_css_end");
 
+#ifdef NODO
+#define HARDWARE_TARGET "Nodo (ESP32-C3)"
+#define RECOMMENDED_FIRMWARE "firmware_nodo.bin"
+#else
+#define HARDWARE_TARGET "ESP32 Dev (DIY)"
+#define RECOMMENDED_FIRMWARE "firmware_esp32dev.bin"
+#endif
+
   // Custom HTML element will be added at the beginning of the body element.
-  const char CUSTOMHTML_BODY_INNER[] PROGMEM = "<header><div class=\"logoContainer\"><img class=\"logo\" src=\"logo.svg\"/></div></header><aside>Firmware version " AUTO_VERSION "</aside>\n";
+  const char CUSTOMHTML_BODY_INNER[] PROGMEM = "<header><div class=\"logoContainer\"><img class=\"logo\" src=\"logo.svg\"/></div></header><aside>Firmware version " AUTO_VERSION " (" HARDWARE_TARGET ")<br><small>Target binary: <code>" RECOMMENDED_FIRMWARE "</code> &bull; <a href=\"https://github.com/t0mg/wordclock\" target=\"_blank\" rel=\"noopener\">GitHub</a> &bull; <a href=\"https://github.com/t0mg/wordclock/releases\" target=\"_blank\" rel=\"noopener\">Releases</a></small></aside>\n";
 
   class CustomHtmlFormatProvider : public iotwebconf::HtmlFormatProvider
   {
@@ -209,9 +217,10 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
       mqtt_enabled_param_(
           "Note: when enabled, config updates trigger a reboot", "mqtt_enabled", mqtt_enabled_value_,
           IOT_CONFIG_VALUE_LENGTH, "0", 0, 1, 1, "style='width: 40px;' data-labels='Off|On'"),
-      mqtt_server_param_("MQTT server", "mqtt_server", mqtt_server_value_, IOT_CONFIG_VALUE_LENGTH, nullptr, nullptr, "data-controlledby='mqtt_enabled' data-showon='1'"),
-      mqtt_user_param_("MQTT user", "mqtt_user", mqtt_user_value_, IOT_CONFIG_VALUE_LENGTH, nullptr, nullptr, "data-controlledby='mqtt_enabled' data-showon='1'"),
-      mqtt_password_param_("MQTT password", "mqtt_password", mqtt_password_value_, IOT_CONFIG_VALUE_LENGTH, nullptr, nullptr, "data-controlledby='mqtt_enabled' data-showon='1'"),
+      mqtt_server_param_("MQTT server", "mqtt_server", mqtt_server_value_, IOT_CONFIG_SERVER_LENGTH, nullptr, "e.g. 192.168.1.100", "data-controlledby='mqtt_enabled' data-showon='1'"),
+      mqtt_port_param_("MQTT port", "mqtt_port", mqtt_port_value_, IOT_CONFIG_PORT_LENGTH, "1883", "1883", "data-controlledby='mqtt_enabled' data-showon='1' data-type='number' min='1' max='65535'"),
+      mqtt_user_param_("MQTT user", "mqtt_user", mqtt_user_value_, IOT_CONFIG_USER_LENGTH, nullptr, nullptr, "data-controlledby='mqtt_enabled' data-showon='1'"),
+      mqtt_password_param_("MQTT password", "mqtt_password", mqtt_password_value_, IOT_CONFIG_PASSWORD_LENGTH, nullptr, nullptr, "data-controlledby='mqtt_enabled' data-showon='1'"),
 
       iot_web_conf_(THING_NAME, &dns_server_, &web_server_,
                     INITIAL_WIFI_AP_PASSWORD, CONFIG_VERSION)
@@ -224,6 +233,7 @@ Iot::Iot(Display *display, RTC_DS3231 *rtc)
   this->api_enabled_value_[0] = '\0';
   this->mqtt_enabled_value_[0] = '\0';
   this->mqtt_server_value_[0] = '\0';
+  this->mqtt_port_value_[0] = '\0';
   this->mqtt_user_value_[0] = '\0';
   this->mqtt_password_value_[0] = '\0';
 
@@ -305,6 +315,7 @@ void Iot::setup()
   this->api_enabled_value_[0] = '\0';
   this->mqtt_enabled_value_[0] = '\0';
   this->mqtt_server_value_[0] = '\0';
+  this->mqtt_port_value_[0] = '\0';
   this->mqtt_user_value_[0] = '\0';
   this->mqtt_password_value_[0] = '\0';
 
@@ -331,6 +342,7 @@ void Iot::setup()
 
   mqtt_group_.addItem(&mqtt_enabled_param_);
   mqtt_group_.addItem(&mqtt_server_param_);
+  mqtt_group_.addItem(&mqtt_port_param_);
   mqtt_group_.addItem(&mqtt_user_param_);
   mqtt_group_.addItem(&mqtt_password_param_);
   iot_web_conf_.addParameterGroup(&mqtt_group_);
@@ -356,6 +368,7 @@ void Iot::setup()
   updateClockFromParams_();
 
   web_server_.on("/", [this]  { handleHttpToRoot_(); });
+  web_server_.on("/firmware", HTTP_GET, [this] { handleFirmwarePage_(); });
   web_server_.onNotFound([this] { iot_web_conf_.handleNotFound(); });
   web_server_.on("/logo.svg", [this]() {
     web_server_.send(HTTP_OK, "image/svg+xml", (char *)logo_svg_start);
@@ -437,6 +450,9 @@ void Iot::setup()
     long e = millis();
     DLOGLN(e - s);
   });
+  web_server_.on("/api/mqtt/test", [this]() {
+    handleMqttTest_();
+  });
 
   if (parseBooleanValue(mqtt_enabled_value_))
   {
@@ -444,7 +460,18 @@ void Iot::setup()
     prefix.toLowerCase();
     prefix.replace(" ", "");
     mqtt_topic_prefix_ = prefix;
-    mqtt_client_.begin(mqtt_server_value_, net_);
+
+    String serverStr = String(mqtt_server_value_);
+    serverStr.trim();
+    int port = parseNumberValue(mqtt_port_value_, 1, 65535, 1883);
+    int colonIdx = serverStr.indexOf(':');
+    if (colonIdx > 0)
+    {
+      port = serverStr.substring(colonIdx + 1).toInt();
+      serverStr = serverStr.substring(0, colonIdx);
+    }
+
+    mqtt_client_.begin(serverStr.c_str(), port, net_);
     mqtt_client_.onMessage([this](String &topic, String &payload)
                            { mqttMessageReceived_(topic, payload); });
     String availabilityTopic = mqtt_topic_prefix_ + "/availability";
@@ -600,10 +627,74 @@ void Iot::handleHttpToRoot_()
   iot_web_conf_.handleConfig();
 }
 
+void Iot::handleFirmwarePage_()
+{
+  if (iot_web_conf_.getState() == iotwebconf::OnLine)
+  {
+    const char *apPassword = iot_web_conf_.getApPasswordParameter()->valueBuffer;
+    if (apPassword != nullptr && apPassword[0] != '\0' && !web_server_.authenticate(IOTWEBCONF_ADMIN_USER_NAME, apPassword))
+    {
+      web_server_.requestAuthentication();
+      return;
+    }
+  }
+
+  String page = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\">";
+  page += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
+  page += "<title>WordClock Firmware Update</title>";
+  page += "<meta name=\"theme-color\" content=\"#121212\" />";
+  page += "<link rel=\"icon\" href=\"logo.svg\" type=\"image/svg+xml\" />";
+  page += "<style>";
+  page += "body { text-align: center; font-family: verdana; background: #121212; color: #fff; margin: 0; padding: 20px; }";
+  page += ".container { display: inline-block; min-width: 280px; max-width: 480px; width: 100%; text-align: center; margin: 0 auto; }";
+  page += ".logoContainer { display: flex; justify-content: center; align-items: center; background: transparent; margin: 20px auto 30px auto; width: 100%; }";
+  page += ".logo { display: block; width: 140px; max-width: 140px; height: auto; margin: 0 auto; mix-blend-mode: normal; box-shadow: 0px 0px 18px 2px #ffffff7d; border-radius: 4px; }";
+  page += ".card { background: #222; border-radius: 8px; padding: 20px; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-align: left; }";
+  page += ".info-box { background: #1a1a1a; border-left: 4px solid #16A1E7; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 0.9em; }";
+  page += ".info-box p { margin: 6px 0; }";
+  page += "input[type='file'] { width: 100%; box-sizing: border-box; padding: 10px; background: #333; border: 1px dashed #555; border-radius: 4px; color: #fff; margin-bottom: 15px; cursor: pointer; }";
+  page += "input[type='submit'], button.action-btn { width: 100%; border: 0; border-radius: 4px; background-color: #16A1E7; color: #fff; line-height: 2.6rem; font-size: 1.1rem; cursor: pointer; font-weight: bold; }";
+  page += "input[type='submit']:hover { background-color: #1180b8; }";
+  page += ".nav-links { display: block; clear: both; margin: 30px auto 10px auto; text-align: center; font-size: 0.95em; position: relative; z-index: 10; }";
+  page += ".nav-links a { display: inline-block; padding: 8px 16px; color: #16A1E7; text-decoration: none; }";
+  page += ".nav-links a:hover { text-decoration: underline; }";
+  page += "</style></head><body class=\"ready\">";
+  page += "<div class=\"container\">";
+  page += "<div class=\"logoContainer\"><img class=\"logo\" src=\"logo.svg\" alt=\"WordClock\"/></div>";
+  page += "<div class=\"card\">";
+  page += "<h2 style=\"margin-top:0;text-align:center;\">Firmware Update</h2>";
+  page += "<div class=\"info-box\">";
+  page += "<p><strong>Current version:</strong> " AUTO_VERSION "</p>";
+  page += "<p><strong>Hardware target:</strong> " HARDWARE_TARGET "</p>";
+  page += "<p><strong>Expected binary:</strong> <code>" RECOMMENDED_FIRMWARE "</code></p>";
+  page += "<p style=\"font-size:0.85em;color:#aaa;\"><a href=\"https://github.com/t0mg/wordclock\" target=\"_blank\" rel=\"noopener\" style=\"color:#16A1E7;\">GitHub</a> &bull; <a href=\"https://github.com/t0mg/wordclock/releases\" target=\"_blank\" rel=\"noopener\" style=\"color:#16A1E7;\">Releases</a></p>";
+  page += "</div>";
+  page += "<form method='POST' action='/firmware' enctype='multipart/form-data' onsubmit=\"var b=document.getElementById('subBtn');b.value='Flashing & rebooting...';b.disabled=true;return true;\">";
+  page += "<input type='file' name='update' accept='.bin' required>";
+  page += "<input id='subBtn' type='submit' value='Upload & Flash'>";
+  page += "</form>";
+  page += "</div>";
+  page += "<p class=\"nav-links\"><a href='/'>&larr; Back to configuration</a></p>";
+  page += "</div></body></html>";
+
+  web_server_.send(200, "text/html; charset=UTF-8", page);
+}
+
 bool Iot::formValidator_(iotwebconf::WebRequestWrapper *webRequestWrapper)
 {
   DLOGLN("Validating form.");
   bool valid = true;
+
+  // IotWebConf requires changing the AP password from the default "password"
+  // to at least 8 characters before Wi-Fi can be established.
+  String apPass = webRequestWrapper->arg(iot_web_conf_.getApPasswordParameter()->getId());
+  String wifiSsid = webRequestWrapper->arg(iot_web_conf_.getWifiSsidParameter()->getId());
+  if (wifiSsid.length() > 0 && (apPass.length() == 0 || apPass.equals(INITIAL_WIFI_AP_PASSWORD) || apPass.length() < 8))
+  {
+    iot_web_conf_.getApPasswordParameter()->errorMessage = "AP password must be changed from default and be at least 8 characters to enable Wi-Fi!";
+    valid = false;
+  }
+
   if (webRequestWrapper->arg(mqtt_enabled_param_.getId()).equals("1"))
   {
     int l = webRequestWrapper->arg(mqtt_server_param_.getId()).length();
@@ -611,6 +702,16 @@ bool Iot::formValidator_(iotwebconf::WebRequestWrapper *webRequestWrapper)
     {
       mqtt_server_param_.errorMessage = "Please provide at least 3 characters!";
       valid = false;
+    }
+    String portStr = webRequestWrapper->arg(mqtt_port_param_.getId());
+    if (portStr.length() > 0)
+    {
+      int port = portStr.toInt();
+      if (port <= 0 || port > 65535)
+      {
+        mqtt_port_param_.errorMessage = "Port must be between 1 and 65535!";
+        valid = false;
+      }
     }
   }
   return valid;
@@ -658,6 +759,12 @@ bool Iot::connectMQTT_()
   if (!connectMqttOptions_())
   {
     last_mqtt_connection_attempt_ = now;
+    lwmqtt_return_code_t rc = mqtt_client_.returnCode();
+    lwmqtt_err_t err = mqtt_client_.lastError();
+    DLOG("MQTT connect failed! returnCode=");
+    DLOG((int)rc);
+    DLOG(" lastError=");
+    DLOGLN((int)err);
     return false;
   }
   DLOGLN("Connected!");
@@ -670,6 +777,8 @@ bool Iot::connectMQTT_()
 
   // Update availability.
   mqtt_client_.publish(mqtt_topic_prefix_ + "/availability", "online", true /* retained */, 0 /* QoS */);
+  // Publish Home Assistant MQTT Discovery.
+  publishHomeAssistantDiscovery_();
   // Publish initial ON state for the switch.
   toggleDisplay_("ON");
   // Publish current color value.
@@ -825,5 +934,188 @@ void Iot::scrollText_(String &text, RgbColor color, int speed, bool rightToLeft)
   } else {
     DLOG("Text length out of bounds");
     DLOGLN(text.length());
+  }
+}
+
+void Iot::handleMqttTest_()
+{
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    web_server_.send(HTTP_OK, "application/json", "{\"status\":\"error\",\"message\":\"Clock is not connected to WiFi. Please connect to your WiFi network first.\"}");
+    return;
+  }
+
+  String server = web_server_.hasArg("server") ? web_server_.arg("server") : String(mqtt_server_value_);
+  server.trim();
+  if (server.length() == 0)
+  {
+    web_server_.send(HTTP_OK, "application/json", "{\"status\":\"error\",\"message\":\"Please specify an MQTT server address.\"}");
+    return;
+  }
+
+  int port = 1883;
+  if (web_server_.hasArg("port") && web_server_.arg("port").length() > 0)
+  {
+    port = web_server_.arg("port").toInt();
+  }
+  else if (mqtt_port_value_[0] != '\0')
+  {
+    port = atoi(mqtt_port_value_);
+  }
+  if (port <= 0 || port > 65535)
+  {
+    port = 1883;
+  }
+
+  int colonIdx = server.indexOf(':');
+  if (colonIdx > 0)
+  {
+    port = server.substring(colonIdx + 1).toInt();
+    server = server.substring(0, colonIdx);
+  }
+
+  String user = web_server_.hasArg("user") ? web_server_.arg("user") : String(mqtt_user_value_);
+  user.trim();
+
+  String password = web_server_.hasArg("password") && web_server_.arg("password").length() > 0
+                        ? web_server_.arg("password")
+                        : String(mqtt_password_value_);
+
+  DLOG("Testing MQTT connection to ");
+  DLOG(server);
+  DLOG(":");
+  DLOGLN(port);
+
+  WiFiClient testNet;
+  testNet.setTimeout(3);
+  MQTTClient testMqtt(256);
+  testMqtt.setTimeout(3000);
+  testMqtt.begin(server.c_str(), port, testNet);
+
+  String testClientId = String(iot_web_conf_.getThingName()) + "-test-" + String(random(1000, 9999));
+  bool connected = false;
+  if (password.length() > 0)
+  {
+    connected = testMqtt.connect(testClientId.c_str(), user.c_str(), password.c_str());
+  }
+  else if (user.length() > 0)
+  {
+    connected = testMqtt.connect(testClientId.c_str(), user.c_str());
+  }
+  else
+  {
+    connected = testMqtt.connect(testClientId.c_str());
+  }
+
+  if (connected)
+  {
+    testMqtt.disconnect();
+    String msg = "Successfully connected to MQTT broker (" + server + ":" + String(port) + ")!";
+    web_server_.send(HTTP_OK, "application/json", "{\"status\":\"ok\",\"message\":\"" + msg + "\"}");
+  }
+  else
+  {
+    lwmqtt_return_code_t rc = testMqtt.returnCode();
+    lwmqtt_err_t err = testMqtt.lastError();
+    String errMsg = "Connection failed: ";
+
+    if (rc == LWMQTT_BAD_USERNAME_OR_PASSWORD)
+    {
+      errMsg += "Bad username or password (rc=4). Check Mosquitto user credentials in Home Assistant.";
+    }
+    else if (rc == LWMQTT_NOT_AUTHORIZED)
+    {
+      errMsg += "Not authorized (rc=5, access denied by broker ACL).";
+    }
+    else if (rc == LWMQTT_SERVER_UNAVAILABLE)
+    {
+      errMsg += "Server unavailable (rc=3, broker not ready).";
+    }
+    else if (rc == LWMQTT_IDENTIFIER_REJECTED)
+    {
+      errMsg += "Client identifier rejected (rc=2).";
+    }
+    else if (rc == LWMQTT_UNACCEPTABLE_PROTOCOL)
+    {
+      errMsg += "Unacceptable protocol version (rc=1).";
+    }
+    else if (err == LWMQTT_NETWORK_FAILED_CONNECT || err == LWMQTT_NETWORK_TIMEOUT)
+    {
+      errMsg += "Cannot reach broker at " + server + ":" + String(port) + " (timeout/refused). Check IP address, port, and UniFi firewall rules between IoT and Server VLANs.";
+    }
+    else
+    {
+      errMsg += "Error code: rc=" + String((int)rc) + ", err=" + String((int)err);
+    }
+
+    web_server_.send(HTTP_OK, "application/json", "{\"status\":\"error\",\"message\":\"" + errMsg + "\"}");
+  }
+}
+
+void Iot::publishHomeAssistantDiscovery_()
+{
+  DLOGLN("Publishing Home Assistant MQTT discovery configs...");
+
+  String thingName = String(iot_web_conf_.getThingName());
+  String deviceId = mqtt_topic_prefix_;
+  String availabilityTopic = mqtt_topic_prefix_ + "/availability";
+
+  // 1. Light entity discovery (homeassistant/light/<deviceId>/config)
+  {
+    JsonDocument doc;
+    doc["name"] = thingName;
+    doc["unique_id"] = deviceId + "_light";
+    doc["schema"] = "basic";
+    doc["state_topic"] = mqtt_topic_prefix_ + "/light/switch";
+    doc["command_topic"] = mqtt_topic_prefix_ + "/light/switch/set";
+    doc["rgb_state_topic"] = mqtt_topic_prefix_ + "/light/color";
+    doc["rgb_command_topic"] = mqtt_topic_prefix_ + "/light/color/set";
+    doc["availability_topic"] = availabilityTopic;
+    doc["payload_available"] = "online";
+    doc["payload_not_available"] = "offline";
+    doc["icon"] = "mdi:clock-digital";
+
+    JsonObject dev = doc["device"].to<JsonObject>();
+    JsonArray ids = dev["identifiers"].to<JsonArray>();
+    ids.add(deviceId);
+    dev["name"] = thingName;
+    dev["model"] = "Wordclock " HARDWARE_TARGET;
+    dev["manufacturer"] = "Giom-V / t0mg";
+    dev["sw_version"] = AUTO_VERSION;
+    dev["configuration_url"] = "http://" + WiFi.localIP().toString();
+
+    String output;
+    serializeJson(doc, output);
+    String topic = "homeassistant/light/" + deviceId + "/config";
+    DLOG("Publishing discovery light to ");
+    DLOGLN(topic);
+    mqtt_client_.publish(topic, output, true /* retained */, 0 /* QoS */);
+  }
+
+  // 2. LDR Sensor entity discovery (homeassistant/sensor/<deviceId>_ldr/config)
+  {
+    JsonDocument doc;
+    doc["name"] = thingName + " Light Sensor";
+    doc["unique_id"] = deviceId + "_ldr";
+    doc["state_topic"] = mqtt_topic_prefix_ + "/sensor/ldr";
+    doc["device_class"] = "illuminance";
+    doc["state_class"] = "measurement";
+    doc["unit_of_measurement"] = "lx";
+    doc["availability_topic"] = availabilityTopic;
+    doc["payload_available"] = "online";
+    doc["payload_not_available"] = "offline";
+    doc["icon"] = "mdi:brightness-6";
+
+    JsonObject dev = doc["device"].to<JsonObject>();
+    JsonArray ids = dev["identifiers"].to<JsonArray>();
+    ids.add(deviceId);
+    dev["name"] = thingName;
+
+    String output;
+    serializeJson(doc, output);
+    String topic = "homeassistant/sensor/" + deviceId + "_ldr/config";
+    DLOG("Publishing discovery sensor to ");
+    DLOGLN(topic);
+    mqtt_client_.publish(topic, output, true /* retained */, 0 /* QoS */);
   }
 }

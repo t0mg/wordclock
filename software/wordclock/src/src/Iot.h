@@ -10,8 +10,12 @@
 #include <IotWebConfESP32HTTPUpdateServer.h>
 #include <RTClib.h>
 
-// Maximum length of a single IoT configuration value.
+// Maximum length of IoT configuration values.
 #define IOT_CONFIG_VALUE_LENGTH 16
+#define IOT_CONFIG_SERVER_LENGTH 33
+#define IOT_CONFIG_USER_LENGTH 33
+#define IOT_CONFIG_PASSWORD_LENGTH 33
+#define IOT_CONFIG_PORT_LENGTH 8
 
 class Iot
 {
@@ -58,6 +62,8 @@ private:
 
   // Handles HTTP requests to web server's "/" path.
   void handleHttpToRoot_();
+  // Handles HTTP GET to /firmware to serve custom update UI.
+  void handleFirmwarePage_();
   // Handles form verification before saving.
   bool formValidator_(iotwebconf::WebRequestWrapper* webRequestWrapper);
   // Handles configuration changes.
@@ -74,6 +80,10 @@ private:
   void setMatrixFromPayload_(String &payload);
   // Scrolls an arbirary text payload on the display.
   void scrollText_(String &text, RgbColor color, int speed, bool rightToLeft);
+  // Tests MQTT connection with provided or saved settings.
+  void handleMqttTest_();
+  // Publishes Home Assistant MQTT Auto-Discovery configuration payloads.
+  void publishHomeAssistantDiscovery_();
 
   // Whether IoT configuration was initialized.
   bool initialized_ = false;
@@ -87,7 +97,7 @@ private:
   // Server for OTA firmware update.
   HTTPUpdateServer http_updater_;
   // MQTT client.
-  MQTTClient mqtt_client_ = MQTTClient(256);
+  MQTTClient mqtt_client_ = MQTTClient(1024);
   // WiFi client (for MQTT).
   WiFiClient net_;
 
@@ -162,17 +172,22 @@ private:
   // MQTT server setting.
   iotwebconf::TextParameter mqtt_server_param_;
   // MQTT server value.
-  char mqtt_server_value_[IOT_CONFIG_VALUE_LENGTH];
+  char mqtt_server_value_[IOT_CONFIG_SERVER_LENGTH];
+
+  // MQTT port setting.
+  iotwebconf::NumberParameter mqtt_port_param_;
+  // MQTT port value.
+  char mqtt_port_value_[IOT_CONFIG_PORT_LENGTH];
 
   // MQTT username setting.
   iotwebconf::TextParameter mqtt_user_param_;
   // MQTT username value.
-  char mqtt_user_value_[IOT_CONFIG_VALUE_LENGTH];
+  char mqtt_user_value_[IOT_CONFIG_USER_LENGTH];
 
   // MQTT password setting.
   iotwebconf::PasswordParameter mqtt_password_param_;
   // MQTT password value.
-  char mqtt_password_value_[IOT_CONFIG_VALUE_LENGTH];
+  char mqtt_password_value_[IOT_CONFIG_PASSWORD_LENGTH];
 
   // Config form groups.
   iotwebconf::ParameterGroup time_group_;

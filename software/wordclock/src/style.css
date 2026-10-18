@@ -108,18 +108,21 @@ body.ready>div:has(> form)::after {
   width: 80vw;
   max-width: 160px;
   display: block;
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
+  box-shadow: 0px 0px 18px 2px #ffffff7d;
+  border-radius: 4px;
 }
 
 .logoContainer {
-  background: white;
+  background: transparent;
   transition: background 3s;
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin: 40px auto;
   padding: 0;
 }
 
-.logoContainer,
 fieldset {
   box-shadow: 0px 0px 15px 1px #ffffff7d;
 }
@@ -213,4 +216,64 @@ form+div {
 body>div>div:last-child {
   margin-top: -36px;
   float: right;
+}
+
+.mqtt-test-btn {
+  margin: 15px auto 0;
+  background-color: #222;
+  color: #eee;
+  border: 1px solid #444;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 0.85em;
+  width: auto;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: background-color 0.2s;
+}
+
+.mqtt-test-btn:hover {
+  background-color: #333;
+}
+
+.mqtt-test-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mqtt-test-result {
+  margin: 10px auto 0;
+  padding: 10px 14px;
+  font-size: 0.85em;
+  border-radius: 4px;
+  line-height: 1.4;
+  word-break: break-word;
+  text-align: left;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.mqtt-test-result.ok {
+  background-color: #14331d;
+  color: #72e492;
+  border: 1px solid #235c34;
+}
+
+.mqtt-test-result.error {
+  background-color: #3d1717;
+  color: #f79292;
+  border: 1px solid #632626;
+}
+
+.mqtt-test-result.pending {
+  background-color: #222;
+  color: #ffb86d;
+  border: 1px solid #444;
+}
+
+.network-status-banner {
+  text-align: center;
+  margin: 10px auto 20px;
+  font-size: 0.9em;
+  font-weight: 500;
 }
